@@ -1,0 +1,19 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="16" fill="#3D4DFF" />
+  <!-- CL monogram: white C + yellow L -->
+  <path
+    d="M34 22C31.5 19.5 28.6 18.3 25.2 18.3C18.4 18.3 13 23.7 13 30.5C13 37.3 18.4 42.7 25.2 42.7C28.6 42.7 31.5 41.5 34 39"
+    stroke="#FFFFFF"
+    stroke-width="6"
+    stroke-linecap="round"
+    fill="none"
+  />
+  <path
+    d="M36.5 18.5V45.5H51.5"
+    stroke="#FFD84D"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>
