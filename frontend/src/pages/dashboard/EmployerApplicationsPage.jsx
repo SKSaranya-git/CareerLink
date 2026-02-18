@@ -30,12 +30,14 @@ export default function EmployerApplicationsPage() {
     const openModal = async (job) => {
         setSelectedJob(job);
         setIsLoadingApps(true);
+        setError(null);
         try {
             const data = await getApplicationsForJob(job._id);
             setApplications(data.applications);
         } catch (err) {
             console.error(err);
             setApplications([]);
+            setError("Failed to load applications.");
         } finally {
             setIsLoadingApps(false);
         }
