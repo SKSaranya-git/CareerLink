@@ -2,21 +2,43 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import JobCard from "../components/JobCard";
 import { useAuth } from "../context/AuthContext";
+import { getMyApplications } from "../api/applicationApi";
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
+  const [myApplications, setMyApplications] = useState({});
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState("");
   const { user } = useAuth();
 
   const loadJobs = async () => {
-    const { data } = await api.get(`/jobs${search ? `?search=${encodeURIComponent(search)}` : ""}`);
-    setJobs(data.jobs);
+    try {
+      const { data } = await api.get(`/jobs${search ? `?search=${encodeURIComponent(search)}` : ""}`);
+      setJobs(data.jobs);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadMyApplications = async () => {
+    if (user && user.role === "job_seeker") {
+      try {
+        const data = await getMyApplications();
+        const appMap = {};
+        data.applications.forEach(app => {
+          appMap[app.job._id] = app;
+        });
+        setMyApplications(appMap);
+      } catch (err) {
+        console.error("Failed to load applications", err);
+      }
+    }
   };
 
   useEffect(() => {
     loadJobs();
-  }, []);
+    loadMyApplications();
+  }, [user]);
 
   const applyToJob = async (jobId) => {
     try {
@@ -24,6 +46,7 @@ export default function JobsPage() {
         coverLetter: "I am excited to apply and contribute meaningful value.",
       });
       setMessage("Application submitted.");
+      loadMyApplications(); // Refresh applications to update UI
     } catch (error) {
       setMessage(error.response?.data?.message || "Application failed.");
     }
@@ -45,6 +68,7 @@ export default function JobsPage() {
             key={job._id}
             job={job}
             canApply={user?.role === "job_seeker"}
+            application={myApplications[job._id]}
             onApply={applyToJob}
           />
         ))}

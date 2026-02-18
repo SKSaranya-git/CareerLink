@@ -15,6 +15,8 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardOverviewPage from "./pages/dashboard/DashboardOverviewPage";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 import ApprovalsPage from "./pages/dashboard/ApprovalsPage";
+import MyApplicationsPage from "./pages/dashboard/MyApplicationsPage";
+import EmployerApplicationsPage from "./pages/dashboard/EmployerApplicationsPage";
 
 function App() {
   return (
@@ -37,6 +39,15 @@ function App() {
           >
             <Route index element={<DashboardOverviewPage />} />
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="my-applications" element={<MyApplicationsPage />} />
+            <Route
+              path="applications"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <EmployerApplicationsPage />
+                </RoleRoute>
+              }
+            />
             <Route
               path="approvals"
               element={

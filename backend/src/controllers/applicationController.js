@@ -16,6 +16,7 @@ async function applyForJob(req, res, next) {
   }
 }
 
+
 async function getApplicationsForJob(req, res, next) {
   try {
     const applications = await applicationService.getApplicationsForJob(req.params.id, {
@@ -28,7 +29,31 @@ async function getApplicationsForJob(req, res, next) {
   }
 }
 
+async function getMyApplications(req, res, next) {
+  try {
+    const applications = await applicationService.getMyApplications(req.user.id);
+    res.status(200).json({ count: applications.length, applications });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateStatus(req, res, next) {
+  try {
+    const application = await applicationService.updateApplicationStatus(
+      req.params.id,
+      req.user.id,
+      req.body.status
+    );
+    res.status(200).json({ message: "Application status updated.", application });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   applyForJob,
   getApplicationsForJob,
+  getMyApplications,
+  updateStatus,
 };

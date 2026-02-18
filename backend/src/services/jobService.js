@@ -10,12 +10,15 @@ async function createJob(payload, employerId) {
 }
 
 async function getAllJobs(query) {
-  const searchFilter = {};
+  const filter = {};
   if (query.search) {
-    searchFilter.$text = { $search: query.search };
+    filter.$text = { $search: query.search };
+  }
+  if (query.employer) {
+    filter.employer = query.employer;
   }
 
-  return Job.find(searchFilter)
+  return Job.find(filter)
     .populate("employer", "name email companyName")
     .sort({ createdAt: -1 });
 }

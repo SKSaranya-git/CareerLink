@@ -59,10 +59,15 @@ export default function DashboardLayout() {
           </div>
         </div>
 
+
         <div className="dash-nav">
           <p className="dash-nav-title">Overview</p>
           <SidebarLink to="/dashboard" label="Dashboard" />
           <SidebarLink to="/dashboard/profile" label="Profile" />
+
+          {user?.role === "job_seeker" && (
+            <SidebarLink to="/dashboard/my-applications" label="My Applications" />
+          )}
 
           {user?.role === "admin" && (
             <>
@@ -75,6 +80,7 @@ export default function DashboardLayout() {
             <>
               <p className="dash-nav-title">Employer</p>
               <SidebarLink to="/post-job" label="Post a Job" />
+              <SidebarLink to="/dashboard/applications" label="Manage Applications" />
             </>
           )}
         </div>

@@ -10,6 +10,13 @@ async function applyForJob(jobId, applicantId, coverLetter = "") {
 
   const existing = await Application.findOne({ job: jobId, applicant: applicantId });
   if (existing) {
+    if (existing.status === "rejected") {
+      // Allow re-application
+      existing.status = "applied";
+      existing.coverLetter = coverLetter;
+      existing.createdAt = Date.now(); // Optional: update timestamp
+      return existing.save();
+    }
     throw new ApiError(409, "You have already applied for this job.");
   }
 
@@ -37,7 +44,33 @@ async function getApplicationsForJob(jobId, requester) {
     .sort({ createdAt: -1 });
 }
 
+async function getMyApplications(userId) {
+  return Application.find({ applicant: userId })
+    .populate({
+      path: "job",
+      select: "title companyName location salary status",
+      populate: { path: "employer", select: "name companyName" },
+    })
+    .sort({ createdAt: -1 });
+}
+
+async function updateApplicationStatus(applicationId, employerId, status) {
+  const application = await Application.findById(applicationId).populate("job");
+  if (!application) {
+    throw new ApiError(404, "Application not found.");
+  }
+
+  if (application.job.employer.toString() !== employerId.toString()) {
+    throw new ApiError(403, "Not authorized to update this application.");
+  }
+
+  application.status = status;
+  return application.save();
+}
+
 module.exports = {
   applyForJob,
   getApplicationsForJob,
+  getMyApplications,
+  updateApplicationStatus,
 };
