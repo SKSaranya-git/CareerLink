@@ -48,7 +48,7 @@ async function getMyApplications(userId) {
   return Application.find({ applicant: userId })
     .populate({
       path: "job",
-      select: "title companyName location salary status",
+      select: "title location salary employer",
       populate: { path: "employer", select: "name companyName" },
     })
     .sort({ createdAt: -1 });
