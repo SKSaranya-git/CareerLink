@@ -21,17 +21,21 @@ export default function JobsPage() {
   };
 
   const loadMyApplications = async () => {
-    if (user && user.role === "job_seeker") {
-      try {
-        const data = await getMyApplications();
-        const appMap = {};
-        data.applications.forEach(app => {
-          appMap[app.job._id] = app;
-        });
-        setMyApplications(appMap);
-      } catch (err) {
-        console.error("Failed to load applications", err);
-      }
+    if (!user || user.role !== "job_seeker") {
+      // Clear applications when there is no user or user is not a job seeker
+      setMyApplications({});
+      return;
+    }
+
+    try {
+      const data = await getMyApplications();
+      const appMap = {};
+      data.applications.forEach(app => {
+        appMap[app.job._id] = app;
+      });
+      setMyApplications(appMap);
+    } catch (err) {
+      console.error("Failed to load applications", err);
     }
   };
 
