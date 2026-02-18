@@ -14,7 +14,6 @@ async function applyForJob(jobId, applicantId, coverLetter = "") {
       // Allow re-application
       existing.status = "applied";
       existing.coverLetter = coverLetter;
-      existing.createdAt = Date.now(); // Optional: update timestamp
       return existing.save();
     }
     throw new ApiError(409, "You have already applied for this job.");
