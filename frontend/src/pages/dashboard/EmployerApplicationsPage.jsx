@@ -210,13 +210,3 @@ export default function EmployerApplicationsPage() {
         </div>
     );
 }
-
-function getStatusColor(status) {
-    switch (status) {
-        case 'applied': return 'info';
-        case 'reviewing': return 'warning';
-        case 'accepted': return 'success';
-        case 'rejected': return 'danger';
-        default: return 'secondary';
-    }
-}
