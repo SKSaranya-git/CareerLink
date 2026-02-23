@@ -1,4 +1,4 @@
-export default function JobCard({ job, canApply, onApply }) {
+export default function JobCard({ job, canApply, onApply, isApplied }) {
   return (
     <div className="card">
       <h3>{job.title}</h3>
@@ -15,9 +15,14 @@ export default function JobCard({ job, canApply, onApply }) {
       <p>
         <strong>Employer:</strong> {job.employer?.companyName || job.employer?.name}
       </p>
-      {canApply && (
+      {canApply && !isApplied && (
         <button className="btn" onClick={() => onApply(job._id)}>
           Apply Job
+        </button>
+      )}
+      {canApply && isApplied && (
+        <button className="btn" disabled title="You already applied to this job">
+          Applied ✓
         </button>
       )}
     </div>
