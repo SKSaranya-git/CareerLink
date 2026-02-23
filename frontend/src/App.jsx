@@ -15,6 +15,11 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardOverviewPage from "./pages/dashboard/DashboardOverviewPage";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 import ApprovalsPage from "./pages/dashboard/ApprovalsPage";
+import MyApplicationsPage from "./pages/dashboard/MyApplicationsPage";
+import EmployerMyJobsPage from "./pages/dashboard/EmployerMyJobsPage";
+import EmployerJobApplicationsPage from "./pages/dashboard/EmployerJobApplicationsPage";
+import EmployerShortlistedPage from "./pages/dashboard/EmployerShortlistedPage";
+import ScheduleInterviewPage from "./pages/dashboard/ScheduleInterviewPage";
 
 function App() {
   return (
@@ -37,6 +42,46 @@ function App() {
           >
             <Route index element={<DashboardOverviewPage />} />
             <Route path="profile" element={<ProfilePage />} />
+            <Route
+              path="my-applications"
+              element={
+                <RoleRoute allowedRoles={["job_seeker"]}>
+                  <MyApplicationsPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="my-jobs"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <EmployerMyJobsPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="job/:jobId/applications"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <EmployerJobApplicationsPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="shortlisted"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <EmployerShortlistedPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="schedule-interview/:applicationId"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <ScheduleInterviewPage />
+                </RoleRoute>
+              }
+            />
             <Route
               path="approvals"
               element={
