@@ -61,106 +61,110 @@ export default function EmployerJobApplicationsPage() {
   };
 
   return (
-    <div className="dash-panel">
-      <div className="dash-panel-head">
-        <h2>Applicants</h2>
+    <div>
+      <div style={{ marginBottom: 12 }}>
+        <h1 className="dash-title" style={{ marginBottom: 6 }}>Applicants</h1>
+        <p className="dash-muted">Review and manage applications for this job.</p>
       </div>
-      {message ? <p>{message}</p> : null}
-      {error ? <p className="error">{error}</p> : null}
 
-      {applications.length === 0 ? (
-        <p className="dash-muted">No applications yet for this job.</p>
-      ) : (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Applicant</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Status</th>
-                <th>Resume</th>
-                <th>Cover Letter</th>
-                <th>Action</th>
-                <th>Note</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map((app) => (
-                <tr key={app._id}>
-                  <td>{app.fullName || app.applicant?.name || "-"}</td>
-                  <td>{app.email || app.applicant?.email || "-"}</td>
-                  <td>{app.phone || app.applicant?.contactNumber || "-"}</td>
-                  <td>{app.status}</td>
-                  <td>
-                    {app.resume ? (
-                      <a href={resumeHref(app.resume)} target="_blank" rel="noreferrer">
-                        View
-                      </a>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td style={{ maxWidth: 360, whiteSpace: "pre-wrap" }}>{app.coverLetter || "-"}</td>
-                  <td>
-                    <div className="row" style={{ gap: 8 }}>
-                      <button
-                        className="btn"
-                        disabled={updatingId === app._id}
-                        onClick={() => updateStatus(app._id, "shortlisted")}
-                        title="Approve to interview (shortlist)"
-                        type="button"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        className="btn danger"
-                        disabled={updatingId === app._id}
-                        onClick={() => updateStatus(app._id, "rejected")}
-                        title="Reject applicant"
-                        type="button"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <button
-                        className="btn secondary-btn small-btn"
-                        type="button"
-                        onClick={() => setNotePanelForId(app._id)}
-                      >
-                        {noteSummaryByAppId[app._id] ? "Edit Note" : "Add Note"}
-                      </button>
-                      {noteSummaryByAppId[app._id]?.preview ? (
-                        <span className="dash-muted note-preview" title={noteSummaryByAppId[app._id].preview}>
-                          {noteSummaryByAppId[app._id].preview}
-                        </span>
-                      ) : null}
-                    </div>
-                  </td>
+      <div className="dash-panel" style={{ marginTop: 0 }}>
+        {message ? <p>{message}</p> : null}
+        {error ? <p className="error">{error}</p> : null}
+
+        {applications.length === 0 ? (
+          <p className="dash-muted">No applications yet for this job.</p>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Applicant</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Resume</th>
+                  <th>Cover Letter</th>
+                  <th>Action</th>
+                  <th>Note</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {applications.map((app) => (
+                  <tr key={app._id}>
+                    <td>{app.fullName || app.applicant?.name || "-"}</td>
+                    <td>{app.email || app.applicant?.email || "-"}</td>
+                    <td>{app.phone || app.applicant?.contactNumber || "-"}</td>
+                    <td>{app.status}</td>
+                    <td>
+                      {app.resume ? (
+                        <a href={resumeHref(app.resume)} target="_blank" rel="noreferrer">
+                          View
+                        </a>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td style={{ maxWidth: 360, whiteSpace: "pre-wrap" }}>{app.coverLetter || "-"}</td>
+                    <td>
+                      <div className="row" style={{ gap: 8 }}>
+                        <button
+                          className="btn"
+                          disabled={updatingId === app._id}
+                          onClick={() => updateStatus(app._id, "shortlisted")}
+                          title="Approve to interview (shortlist)"
+                          type="button"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="btn danger"
+                          disabled={updatingId === app._id}
+                          onClick={() => updateStatus(app._id, "rejected")}
+                          title="Reject applicant"
+                          type="button"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: "grid", gap: 6 }}>
+                        <button
+                          className="btn secondary-btn small-btn"
+                          type="button"
+                          onClick={() => setNotePanelForId(app._id)}
+                        >
+                          {noteSummaryByAppId[app._id] ? "Edit Note" : "Add Note"}
+                        </button>
+                        {noteSummaryByAppId[app._id]?.preview ? (
+                          <span className="dash-muted note-preview" title={noteSummaryByAppId[app._id].preview}>
+                            {noteSummaryByAppId[app._id].preview}
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-      {notePanelForId && (
-        <SingleApplicationNotePanel
-          applicationId={notePanelForId}
-          onClose={() => setNotePanelForId(null)}
-          onNoteChange={(appId, summary) =>
-            setNoteSummaryByAppId((prev) => {
-              const next = { ...prev };
-              if (!summary) delete next[appId];
-              else next[appId] = summary;
-              return next;
-            })
-          }
-        />
-      )}
+        {notePanelForId && (
+          <SingleApplicationNotePanel
+            applicationId={notePanelForId}
+            onClose={() => setNotePanelForId(null)}
+            onNoteChange={(appId, summary) =>
+              setNoteSummaryByAppId((prev) => {
+                const next = { ...prev };
+                if (!summary) delete next[appId];
+                else next[appId] = summary;
+                return next;
+              })
+            }
+          />
+        )}
+      </div>
     </div>
   );
 }

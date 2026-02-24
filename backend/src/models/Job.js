@@ -23,9 +23,10 @@ const jobSchema = new mongoose.Schema(
       min: 0,
     },
     employmentType: {
-      type: String,
+      type: [String],
       enum: ["full-time", "part-time", "internship", "contract"],
       required: true,
+      validate: [v => Array.isArray(v) && v.length > 0, "Must specify at least one employment type"],
     },
     employer: {
       type: mongoose.Schema.Types.ObjectId,

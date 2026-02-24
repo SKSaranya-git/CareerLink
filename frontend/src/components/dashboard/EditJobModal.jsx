@@ -9,10 +9,22 @@ export default function EditJobModal({ job, onClose, onUpdated }) {
         requirements: job.requirements || "",
         location: job.location || "",
         salary: job.salary || "",
-        employmentType: job.employmentType || "full-time",
+        employmentType: Array.isArray(job.employmentType) ? job.employmentType : (job.employmentType ? [job.employmentType] : ["full-time"]),
     });
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    const handleTypeChange = (value) => {
+        setForm((prev) => {
+            const current = prev.employmentType;
+            if (current.includes(value)) {
+                return { ...prev, employmentType: current.filter((t) => t !== value) };
+            } else {
+                return { ...prev, employmentType: [...current, value] };
+            }
+        });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -77,21 +89,24 @@ export default function EditJobModal({ job, onClose, onUpdated }) {
                             placeholder="Salary"
                             required
                         />
-                        <select
-                            value={form.employmentType}
-                            onChange={(e) => setForm({ ...form, employmentType: e.target.value })}
-                        >
-                            <option value="full-time">Full-time</option>
-                            <option value="part-time">Part-time</option>
-                            <option value="internship">Internship</option>
-                            <option value="contract">Contract</option>
-                        </select>
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', margin: '0.5rem 0' }}>
+                            {["full-time", "part-time", "internship", "contract"].map(type => (
+                                <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={form.employmentType.includes(type)}
+                                        onChange={() => handleTypeChange(type)}
+                                    />
+                                    <span style={{ textTransform: 'capitalize' }}>{type.replace("-", " ")}</span>
+                                </label>
+                            ))}
+                        </div>
                         {error && <p className="error">{error}</p>}
                         <div className="dialog-actions mt-2" style={{ marginTop: "1rem" }}>
                             <button type="button" className="btn secondary-btn" onClick={onClose}>
                                 Cancel
                             </button>
-                            <button type="submit" className="btn" disabled={loading}>
+                            <button type="submit" className="btn" disabled={loading || form.employmentType.length === 0}>
                                 {loading ? "Saving..." : "Save Changes"}
                             </button>
                         </div>

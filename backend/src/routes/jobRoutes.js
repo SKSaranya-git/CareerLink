@@ -45,7 +45,12 @@ router.post(
     body("description").isLength({ min: 10 }),
     body("location").notEmpty(),
     body("salary").isFloat({ min: 0 }),
-    body("employmentType").isIn(["full-time", "part-time", "internship", "contract"]),
+    body("employmentType")
+      .isArray({ min: 1 })
+      .withMessage("Must provide at least one employment type"),
+    body("employmentType.*")
+      .isIn(["full-time", "part-time", "internship", "contract"])
+      .withMessage("Invalid employment type"),
     validateRequest,
   ],
   jobController.createJob
@@ -61,7 +66,9 @@ router.put(
     body("description").optional().isLength({ min: 10 }),
     body("location").optional().notEmpty(),
     body("salary").optional().isFloat({ min: 0 }),
-    body("employmentType").optional().isIn(["full-time", "part-time", "internship", "contract"]),
+    body("employmentType").optional().isArray({ min: 1 }),
+    body("employmentType.*").optional()
+      .isIn(["full-time", "part-time", "internship", "contract"]),
     validateRequest,
   ],
   jobController.updateJob
