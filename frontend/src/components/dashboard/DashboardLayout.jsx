@@ -74,7 +74,7 @@ export default function DashboardLayout() {
           {user?.role === "employer" && (
             <>
               <p className="dash-nav-title">Employer</p>
-              <SidebarLink to="/post-job" label="Post a Job" />
+              <SidebarLink to="/dashboard/post-job" label="Post a Job" />
               <SidebarLink to="/dashboard/my-jobs" label="My Jobs" />
               <SidebarLink to="/dashboard/shortlisted" label="Shortlisted" />
             </>

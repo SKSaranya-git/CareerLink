@@ -90,15 +90,15 @@ function App() {
                 </RoleRoute>
               }
             />
+            <Route
+              path="post-job"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <PostJobPage />
+                </RoleRoute>
+              }
+            />
           </Route>
-          <Route
-            path="/post-job"
-            element={
-              <RoleRoute allowedRoles={["employer"]}>
-                <PostJobPage />
-              </RoleRoute>
-            }
-          />
           <Route
             path="/admin"
             element={

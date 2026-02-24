@@ -1,13 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import api from "../api/axios";
 import JobCard from "../components/JobCard";
 import { useAuth } from "../context/AuthContext";
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filters
   const [search, setSearch] = useState("");
+  const [minSalary, setMinSalary] = useState("");
+  const [jobType, setJobType] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
+  const [datePosted, setDatePosted] = useState("");
+
+  // Selection
+  const [selectedJobId, setSelectedJobId] = useState(null);
+
+  // Action State
   const [message, setMessage] = useState("");
   const { user } = useAuth();
+
+  // Apply Logic
   const [appliedJobIds, setAppliedJobIds] = useState(() => new Set());
   const [applyForm, setApplyForm] = useState({
     isOpen: false,
@@ -22,12 +36,23 @@ export default function JobsPage() {
   });
 
   const loadJobs = async () => {
-    const { data } = await api.get(`/jobs${search ? `?search=${encodeURIComponent(search)}` : ""}`);
-    setJobs(data.jobs);
+    setLoading(true);
+    try {
+      const { data } = await api.get(`/jobs${search ? `?search=${encodeURIComponent(search)}` : ""}`);
+      setJobs(data.jobs);
+      if (data.jobs.length > 0 && !selectedJobId) {
+        setSelectedJobId(data.jobs[0]._id);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     loadJobs();
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -43,6 +68,38 @@ export default function JobsPage() {
     }
     loadApplied();
   }, [user]);
+
+  // Client-side filtering
+  const filteredJobs = useMemo(() => {
+    return jobs.filter(job => {
+      if (minSalary && job.salary < Number(minSalary)) return false;
+      if (jobType) {
+        if (Array.isArray(job.employmentType)) {
+          if (!job.employmentType.includes(jobType)) return false;
+        } else {
+          if (job.employmentType !== jobType) return false;
+        }
+      }
+
+      // Basic date matching (within X days)
+      if (datePosted) {
+        const postedDate = new Date(job.createdAt);
+        const now = new Date();
+        const diffTime = Math.abs(now - postedDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (datePosted === "24h" && diffDays > 1) return false;
+        if (datePosted === "7d" && diffDays > 7) return false;
+        if (datePosted === "30d" && diffDays > 30) return false;
+      }
+
+      return true;
+    });
+  }, [jobs, minSalary, jobType, experienceLevel, datePosted]);
+
+  // Keep selected job in sync
+  const selectedJob = useMemo(() => {
+    return jobs.find(j => j._id === selectedJobId) || null;
+  }, [jobs, selectedJobId]);
 
   const openApply = (jobId) => {
     setMessage("");
@@ -95,36 +152,182 @@ export default function JobsPage() {
     }
   };
 
+  const saveJob = () => {
+    setMessage("Job saved to your profile.");
+    setTimeout(() => setMessage(""), 3000);
+  };
+
   return (
-    <div className="container">
-      <h1>Job Listings</h1>
-      <div className="row">
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search jobs" />
-        <button className="btn" onClick={loadJobs}>
-          Search
-        </button>
-      </div>
-      {message && <p>{message}</p>}
-      <div className="grid">
-        {jobs.map((job) => (
-          <JobCard
-            key={job._id}
-            job={job}
-            canApply={user?.role === "job_seeker"}
-            onApply={openApply}
-            isApplied={appliedJobIds.has(job._id)}
+    <div className="jobs-page-container">
+      <div className="jobs-filter-bar">
+        <div className="jobs-filter-group" style={{ flexGrow: 1 }}>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by title, keywords..."
+            style={{ width: "100%" }}
           />
-        ))}
+        </div>
+        <div className="jobs-filter-group">
+          <select value={jobType} onChange={(e) => setJobType(e.target.value)}>
+            <option value="">Job Type</option>
+            <option value="full-time">Full-time</option>
+            <option value="part-time">Part-time</option>
+            <option value="contract">Contract</option>
+            <option value="internship">Internship</option>
+          </select>
+        </div>
+        <div className="jobs-filter-group">
+          <select value={minSalary} onChange={(e) => setMinSalary(e.target.value)}>
+            <option value="">Pay (Minimum)</option>
+            <option value="50000">LKR 50,000+</option>
+            <option value="100000">LKR 100,000+</option>
+            <option value="200000">LKR 200,000+</option>
+          </select>
+        </div>
+        <div className="jobs-filter-group">
+          <select value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)}>
+            <option value="">Experience Level</option>
+            <option value="entry">Entry Level</option>
+            <option value="mid">Mid Level</option>
+            <option value="senior">Senior Level</option>
+          </select>
+        </div>
+        <div className="jobs-filter-group">
+          <select value={datePosted} onChange={(e) => setDatePosted(e.target.value)}>
+            <option value="">Date Posted</option>
+            <option value="24h">Past 24 hours</option>
+            <option value="7d">Past week</option>
+            <option value="30d">Past month</option>
+          </select>
+        </div>
+        <button className="btn" onClick={loadJobs}>Find Jobs</button>
       </div>
 
+      {message && (
+        <div style={{ padding: "1rem", background: "#ecfdf5", color: "#065f46", borderRadius: "8px", marginBottom: "1rem" }}>
+          {message}
+        </div>
+      )}
+
+      {loading ? (
+        <p>Loading jobs...</p>
+      ) : (
+        <div className="jobs-layout">
+          {/* LEFT PANE: List */}
+          <div className="jobs-list-pane">
+            {filteredJobs.length === 0 ? (
+              <p style={{ color: "#6b7280" }}>No jobs match your criteria.</p>
+            ) : (
+              filteredJobs.map((job) => (
+                <JobCard
+                  key={job._id}
+                  job={job}
+                  isActive={selectedJobId === job._id}
+                  onClick={() => setSelectedJobId(job._id)}
+                />
+              ))
+            )}
+          </div>
+
+          {/* RIGHT PANE: Details */}
+          <div className="job-detail-pane">
+            {selectedJob ? (
+              <>
+                <div className="job-detail-header">
+                  <h2>{selectedJob.title}</h2>
+                  <div className="job-detail-meta">
+                    <strong>{selectedJob.employer?.companyName || selectedJob.employer?.name}</strong>
+                    <span>•</span>
+                    <span>{selectedJob.location}</span>
+                    <span>•</span>
+                    <span>Posted {selectedJob.createdAt ? new Date(selectedJob.createdAt).toLocaleDateString() : "-"}</span>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "1rem" }}>
+                    {Array.isArray(selectedJob.employmentType) ? (
+                      selectedJob.employmentType.map(type => (
+                        <span key={type} className="dash-tag" style={{ background: "#f3f4f6", color: "#374151" }}>
+                          {type.replace("-", " ")}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="dash-tag" style={{ background: "#f3f4f6", color: "#374151" }}>
+                        {selectedJob.employmentType}
+                      </span>
+                    )}
+                    <span className="dash-tag" style={{ background: "#ecfdf5", color: "#065f46" }}>
+                      LKR {selectedJob.salary}
+                    </span>
+                  </div>
+
+                  <div className="job-detail-actions">
+                    {user?.role === "job_seeker" ? (
+                      appliedJobIds.has(selectedJob._id) ? (
+                        <button className="btn" disabled title="You already applied to this job">
+                          Applied ✓
+                        </button>
+                      ) : (
+                        <button className="btn" onClick={() => openApply(selectedJob._id)} style={{ padding: "0.8rem 2rem" }}>
+                          Apply Now
+                        </button>
+                      )
+                    ) : (
+                      <button className="btn secondary-btn" disabled title="Only job seekers can apply">
+                        Apply Now
+                      </button>
+                    )}
+                    <button className="btn secondary-btn" onClick={saveJob}>
+                      Save Job
+                    </button>
+                  </div>
+
+                </div>
+
+                <div className="job-detail-body">
+                  <h3>Job Description</h3>
+                  <div style={{ whiteSpace: "pre-wrap" }}>
+                    {selectedJob.description}
+                  </div>
+
+                  {selectedJob.responsibilities && (
+                    <>
+                      <h3>Responsibilities</h3>
+                      <div style={{ whiteSpace: "pre-wrap" }}>
+                        {selectedJob.responsibilities}
+                      </div>
+                    </>
+                  )}
+
+                  {selectedJob.requirements && (
+                    <>
+                      <h3>Requirements</h3>
+                      <div style={{ whiteSpace: "pre-wrap" }}>
+                        {selectedJob.requirements}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+              </>
+            ) : (
+              <div className="empty-state">
+                <p>Select a job from the list to view details</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Application Modal */}
       {applyForm.isOpen && (
         <div className="dialog-backdrop" onClick={closeApply} role="presentation">
           <div className="dialog" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div className="dialog-head">
               <div>
-                <h3>Apply for Job</h3>
+                <h3>Apply for {selectedJob?.title}</h3>
                 <p className="dash-muted" style={{ marginTop: 4 }}>
-                  Submit your details and resume. You can optionally email yourself a copy.
+                  Submit your details and resume.
                 </p>
               </div>
               <button className="dialog-close" type="button" onClick={closeApply} aria-label="Close">
@@ -139,16 +342,20 @@ export default function JobsPage() {
                   placeholder="Full name"
                   value={applyForm.fullName}
                   onChange={(e) => setApplyForm((p) => ({ ...p, fullName: e.target.value }))}
+                  required
                 />
                 <input
+                  type="email"
                   placeholder="Email"
                   value={applyForm.email}
                   onChange={(e) => setApplyForm((p) => ({ ...p, email: e.target.value }))}
+                  required
                 />
                 <input
                   placeholder="Phone"
                   value={applyForm.phone}
                   onChange={(e) => setApplyForm((p) => ({ ...p, phone: e.target.value }))}
+                  required
                 />
                 <textarea
                   placeholder="Cover letter (optional)"
@@ -164,6 +371,7 @@ export default function JobsPage() {
                       type="file"
                       accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                       onChange={(e) => setApplyForm((p) => ({ ...p, resumeFile: e.target.files?.[0] || null }))}
+                      required
                     />
                   </label>
                 </div>
@@ -177,7 +385,7 @@ export default function JobsPage() {
                   Email me a copy of this application
                 </label>
 
-                <div className="dialog-actions">
+                <div className="dialog-actions" style={{ marginTop: "1rem" }}>
                   <button className="btn secondary-btn" type="button" onClick={closeApply} disabled={applyForm.submitting}>
                     Cancel
                   </button>

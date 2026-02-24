@@ -1,30 +1,31 @@
-export default function JobCard({ job, canApply, onApply, isApplied }) {
+export default function JobCard({ job, isActive, onClick }) {
   return (
-    <div className="card">
+    <div
+      className={`job-card-selectable ${isActive ? "active" : ""}`}
+      onClick={onClick}
+    >
       <h3>{job.title}</h3>
-      <p>{job.description}</p>
-      <p>
-        <strong>Location:</strong> {job.location}
+      <p style={{ fontWeight: 600, color: "#374151", marginBottom: '0.2rem' }}>
+        {job.employer?.companyName || job.employer?.name}
       </p>
-      <p>
-        <strong>Salary:</strong> LKR {job.salary}
-      </p>
-      <p>
-        <strong>Type:</strong> {job.employmentType}
-      </p>
-      <p>
-        <strong>Employer:</strong> {job.employer?.companyName || job.employer?.name}
-      </p>
-      {canApply && !isApplied && (
-        <button className="btn" onClick={() => onApply(job._id)}>
-          Apply Job
-        </button>
-      )}
-      {canApply && isApplied && (
-        <button className="btn" disabled title="You already applied to this job">
-          Applied ✓
-        </button>
-      )}
+      <p style={{ margin: 0 }}>{job.location}</p>
+
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.8rem" }}>
+        {Array.isArray(job.employmentType) ? (
+          job.employmentType.map(type => (
+            <span key={type} className="dash-tag" style={{ background: "#f3f4f6", color: "#374151" }}>
+              {type.replace("-", " ")}
+            </span>
+          ))
+        ) : (
+          <span className="dash-tag" style={{ background: "#f3f4f6", color: "#374151" }}>
+            {job.employmentType}
+          </span>
+        )}
+        <span className="dash-tag" style={{ background: "#ecfdf5", color: "#065f46" }}>
+          LKR {job.salary}
+        </span>
+      </div>
     </div>
   );
 }
