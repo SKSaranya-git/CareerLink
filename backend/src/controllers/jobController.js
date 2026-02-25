@@ -45,10 +45,20 @@ async function deleteJob(req, res, next) {
   }
 }
 
+async function getMyJobs(req, res, next) {
+  try {
+    const jobs = await jobService.getMyJobs(req.user.id);
+    res.status(200).json({ count: jobs.length, jobs });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createJob,
   getAllJobs,
   getJobById,
   updateJob,
   deleteJob,
+  getMyJobs,
 };
