@@ -84,6 +84,7 @@ export default function DashboardLayout() {
             <>
               <p className="dash-nav-title">Job Seeker</p>
               <SidebarLink to="/dashboard/my-applications" label="My Applications" />
+              <SidebarLink to="/dashboard/saved-jobs" label="Saved Jobs" />
             </>
           )}
         </div>
