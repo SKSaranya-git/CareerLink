@@ -20,6 +20,7 @@ import EmployerMyJobsPage from "./pages/dashboard/EmployerMyJobsPage";
 import EmployerJobApplicationsPage from "./pages/dashboard/EmployerJobApplicationsPage";
 import EmployerShortlistedPage from "./pages/dashboard/EmployerShortlistedPage";
 import ScheduleInterviewPage from "./pages/dashboard/ScheduleInterviewPage";
+import SavedJobsPage from "./pages/dashboard/SavedJobsPage";
 
 function App() {
   return (
@@ -47,6 +48,14 @@ function App() {
               element={
                 <RoleRoute allowedRoles={["job_seeker"]}>
                   <MyApplicationsPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="saved-jobs"
+              element={
+                <RoleRoute allowedRoles={["job_seeker"]}>
+                  <SavedJobsPage />
                 </RoleRoute>
               }
             />

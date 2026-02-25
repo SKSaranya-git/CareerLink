@@ -89,4 +89,23 @@ router.delete(
   userController.deleteUser
 );
 
+// Saved Jobs (job_seeker only)
+router.get(
+  "/saved-jobs",
+  [protect, authorize(ROLES.JOB_SEEKER)],
+  userController.getSavedJobs
+);
+
+router.post(
+  "/saved-jobs/:jobId",
+  [protect, authorize(ROLES.JOB_SEEKER), param("jobId").isMongoId(), validateRequest],
+  userController.saveJob
+);
+
+router.delete(
+  "/saved-jobs/:jobId",
+  [protect, authorize(ROLES.JOB_SEEKER), param("jobId").isMongoId(), validateRequest],
+  userController.unsaveJob
+);
+
 module.exports = router;

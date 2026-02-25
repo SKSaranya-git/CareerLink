@@ -152,9 +152,45 @@ export default function JobsPage() {
     }
   };
 
-  const saveJob = () => {
-    setMessage("Job saved to your profile.");
-    setTimeout(() => setMessage(""), 3000);
+  // Saved Jobs Logic
+  const [savedJobIds, setSavedJobIds] = useState(() => new Set());
+
+  useEffect(() => {
+    async function loadSavedJobs() {
+      if (!user || user.role !== "job_seeker") return;
+      try {
+        const { data } = await api.get("/users/saved-jobs");
+        const ids = new Set((data.savedJobs || []).map((j) => j._id).filter(Boolean));
+        setSavedJobIds(ids);
+      } catch {
+        // non-blocking
+      }
+    }
+    loadSavedJobs();
+  }, [user]);
+
+  const toggleSaveJob = async (jobId) => {
+    if (!user || user.role !== "job_seeker") return;
+    const isSaved = savedJobIds.has(jobId);
+    try {
+      if (isSaved) {
+        await api.delete(`/users/saved-jobs/${jobId}`);
+        setSavedJobIds((prev) => {
+          const next = new Set(prev);
+          next.delete(jobId);
+          return next;
+        });
+        setMessage("Job removed from saved.");
+      } else {
+        await api.post(`/users/saved-jobs/${jobId}`);
+        setSavedJobIds((prev) => new Set([...prev, jobId]));
+        setMessage("Job saved to your profile.");
+      }
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Failed to save job.");
+      setTimeout(() => setMessage(""), 3000);
+    }
   };
 
   return (
@@ -277,9 +313,14 @@ export default function JobsPage() {
                         Apply Now
                       </button>
                     )}
-                    <button className="btn secondary-btn" onClick={saveJob}>
-                      Save Job
-                    </button>
+                    {user?.role === "job_seeker" && (
+                      <button
+                        className={`btn ${savedJobIds.has(selectedJob._id) ? "" : "secondary-btn"}`}
+                        onClick={() => toggleSaveJob(selectedJob._id)}
+                      >
+                        {savedJobIds.has(selectedJob._id) ? "Saved ✓" : "Save Job"}
+                      </button>
+                    )}
                   </div>
 
                 </div>
