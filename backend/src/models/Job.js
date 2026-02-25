@@ -12,6 +12,16 @@ const jobSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    responsibilities: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    requirements: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     location: {
       type: String,
       required: true,

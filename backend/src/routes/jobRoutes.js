@@ -43,6 +43,8 @@ router.post(
     authorize(ROLES.EMPLOYER),
     body("title").isLength({ min: 3 }),
     body("description").isLength({ min: 10 }),
+    body("responsibilities").isLength({ min: 10 }).withMessage("Responsibilities must be at least 10 characters"),
+    body("requirements").isLength({ min: 10 }).withMessage("Requirements must be at least 10 characters"),
     body("location").notEmpty(),
     body("salary").isFloat({ min: 0 }),
     body("employmentType")
@@ -64,6 +66,8 @@ router.put(
     param("id").isMongoId(),
     body("title").optional().isLength({ min: 3 }),
     body("description").optional().isLength({ min: 10 }),
+    body("responsibilities").optional().isLength({ min: 10 }).withMessage("Responsibilities must be at least 10 characters"),
+    body("requirements").optional().isLength({ min: 10 }).withMessage("Requirements must be at least 10 characters"),
     body("location").optional().notEmpty(),
     body("salary").optional().isFloat({ min: 0 }),
     body("employmentType").optional().isArray({ min: 1 }),
