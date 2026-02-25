@@ -54,10 +54,17 @@ async function deleteJob(jobId, employerId) {
   await Job.findByIdAndDelete(jobId);
 }
 
+async function getMyJobs(employerId) {
+  return Job.find({ employer: employerId })
+    .populate("employer", "name email companyName")
+    .sort({ createdAt: -1 });
+}
+
 module.exports = {
   createJob,
   getAllJobs,
   getJobById,
   updateJob,
   deleteJob,
+  getMyJobs,
 };

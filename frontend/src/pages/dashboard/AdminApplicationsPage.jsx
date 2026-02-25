@@ -7,7 +7,7 @@ export default function AdminApplicationsPage() {
 
   useEffect(() => {
     api
-      .get("/admin/applications")
+      .get("/applications")
       .then((res) => setApplications(res.data.applications || []))
       .catch((err) => setError(err?.response?.data?.message || "Failed to load applications"));
   }, []);
@@ -34,7 +34,7 @@ export default function AdminApplicationsPage() {
                 <td>{app.job?.title || "-"}</td>
                 <td>{app.applicant?.name || "-"}</td>
                 <td>{app.applicant?.email || "-"}</td>
-                <td>{app.createdAt ? new Date(app.createdAt).toLocaleDateString() : "-"}</td>
+                <td>{app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : "-"}</td>
               </tr>
             ))}
           </tbody>
