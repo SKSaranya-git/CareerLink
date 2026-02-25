@@ -88,6 +88,18 @@ async function employerGetShortlisted(req, res, next) {
   }
 }
 
+async function getById(req, res, next) {
+  try {
+    const application = await applicationService.getApplicationByIdForUser({
+      user: req.user,
+      applicationId: req.params.applicationId,
+    });
+    res.status(200).json({ application });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   submitApplication,
   getMyApplications,
@@ -95,5 +107,6 @@ module.exports = {
   updateStatus,
   adminGetAll,
   employerGetShortlisted,
+  getById,
 };
 
