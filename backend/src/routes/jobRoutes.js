@@ -6,6 +6,7 @@ const { protect } = require("../middlewares/authMiddleware");
 const { authorize } = require("../middlewares/roleMiddleware");
 const validateRequest = require("../middlewares/validateRequest");
 const { ROLES } = require("../utils/constants");
+const { uploadResume } = require("../config/multer");
 
 const router = express.Router();
 
@@ -19,6 +20,9 @@ const router = express.Router();
  *       200: { description: OK }
  */
 router.get("/", jobController.getAllJobs);
+
+// Employer: view only jobs posted by current employer
+router.get("/my-jobs", [protect, authorize(ROLES.EMPLOYER)], jobController.getMyJobs);
 
 router.get("/:id", [param("id").isMongoId(), validateRequest], jobController.getJobById);
 
@@ -74,8 +78,13 @@ router.post(
   [
     protect,
     authorize(ROLES.JOB_SEEKER),
+    uploadResume.single("resume"),
     param("id").isMongoId(),
+    body("fullName").notEmpty().withMessage("fullName is required."),
+    body("email").isEmail().withMessage("Valid email is required.").normalizeEmail(),
+    body("phone").notEmpty().withMessage("phone is required."),
     body("coverLetter").optional().isString(),
+    body("sendCopyToEmail").optional().isBoolean().toBoolean(),
     validateRequest,
   ],
   applicationController.applyForJob
@@ -83,7 +92,7 @@ router.post(
 
 router.get(
   "/:id/applications",
-  [protect, param("id").isMongoId(), validateRequest],
+  [protect, authorize(ROLES.EMPLOYER), param("id").isMongoId(), validateRequest],
   applicationController.getApplicationsForJob
 );
 
