@@ -15,9 +15,20 @@ async function getAllJobs(query) {
     searchFilter.$text = { $search: query.search };
   }
 
-  return Job.find(searchFilter)
-    .populate("employer", "name email companyName")
-    .sort({ createdAt: -1 });
+  const page = Math.max(1, parseInt(query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 10));
+  const skip = (page - 1) * limit;
+
+  const [jobs, totalCount] = await Promise.all([
+    Job.find(searchFilter)
+      .populate("employer", "name email companyName")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Job.countDocuments(searchFilter),
+  ]);
+
+  return { jobs, totalCount, page, totalPages: Math.ceil(totalCount / limit) };
 }
 
 async function getJobById(jobId) {

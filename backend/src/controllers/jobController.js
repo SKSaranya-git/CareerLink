@@ -11,8 +11,14 @@ async function createJob(req, res, next) {
 
 async function getAllJobs(req, res, next) {
   try {
-    const jobs = await jobService.getAllJobs(req.query);
-    res.status(200).json({ count: jobs.length, jobs });
+    const result = await jobService.getAllJobs(req.query);
+    res.status(200).json({
+      count: result.jobs.length,
+      totalCount: result.totalCount,
+      page: result.page,
+      totalPages: result.totalPages,
+      jobs: result.jobs,
+    });
   } catch (error) {
     next(error);
   }

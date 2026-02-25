@@ -6,6 +6,10 @@ import { useAuth } from "../context/AuthContext";
 export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -35,23 +39,40 @@ export default function JobsPage() {
     submitting: false,
   });
 
-  const loadJobs = async () => {
-    setLoading(true);
+  const loadJobs = async (pageNum = 1) => {
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
     try {
-      const { data } = await api.get(`/jobs${search ? `?search=${encodeURIComponent(search)}` : ""}`);
-      setJobs(data.jobs);
-      if (data.jobs.length > 0 && !selectedJobId) {
-        setSelectedJobId(data.jobs[0]._id);
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      params.set("page", String(pageNum));
+      params.set("limit", "10");
+      const { data } = await api.get(`/jobs?${params.toString()}`);
+      if (pageNum === 1) {
+        setJobs(data.jobs);
+        if (data.jobs.length > 0 && !selectedJobId) {
+          setSelectedJobId(data.jobs[0]._id);
+        }
+      } else {
+        setJobs((prev) => [...prev, ...data.jobs]);
       }
+      setPage(data.page);
+      setTotalCount(data.totalCount);
+      setHasMore(data.page < data.totalPages);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
+  const loadMore = () => {
+    if (hasMore && !loadingMore) loadJobs(page + 1);
+  };
+
   useEffect(() => {
-    loadJobs();
+    loadJobs(1);
     // eslint-disable-next-line
   }, []);
 
@@ -237,7 +258,7 @@ export default function JobsPage() {
             <option value="30d">Past month</option>
           </select>
         </div>
-        <button className="btn" onClick={loadJobs}>Find Jobs</button>
+        <button className="btn" onClick={() => loadJobs(1)}>Find Jobs</button>
       </div>
 
       {message && (
@@ -255,14 +276,31 @@ export default function JobsPage() {
             {filteredJobs.length === 0 ? (
               <p style={{ color: "#6b7280" }}>No jobs match your criteria.</p>
             ) : (
-              filteredJobs.map((job) => (
-                <JobCard
-                  key={job._id}
-                  job={job}
-                  isActive={selectedJobId === job._id}
-                  onClick={() => setSelectedJobId(job._id)}
-                />
-              ))
+              <>
+                {filteredJobs.map((job) => (
+                  <JobCard
+                    key={job._id}
+                    job={job}
+                    isActive={selectedJobId === job._id}
+                    onClick={() => setSelectedJobId(job._id)}
+                  />
+                ))}
+
+                <div style={{ padding: "0.75rem 1rem", textAlign: "center", color: "#6b7280", fontSize: "0.85rem" }}>
+                  Showing {filteredJobs.length} of {totalCount} jobs
+                </div>
+
+                {hasMore && (
+                  <button
+                    className="btn secondary-btn"
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    style={{ width: "100%", marginTop: "0.25rem" }}
+                  >
+                    {loadingMore ? "Loading..." : "Load More Jobs"}
+                  </button>
+                )}
+              </>
             )}
           </div>
 
