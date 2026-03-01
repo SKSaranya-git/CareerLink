@@ -47,6 +47,12 @@ router.get(
   applicationController.employerGetShortlisted
 );
 
+router.get(
+  "/:applicationId",
+  [protect, authorize(ROLES.EMPLOYER, ROLES.JOB_SEEKER, ROLES.ADMIN), param("applicationId").isMongoId(), validateRequest],
+  applicationController.getById
+);
+
 router.patch(
   "/:applicationId/status",
   [

@@ -189,6 +189,32 @@ async function employerGetShortlistedApplications(employerUser) {
   return applicationRepository.findByJobIdsAndStatus(myJobIds, "shortlisted");
 }
 
+async function getApplicationByIdForUser({ user, applicationId }) {
+  if (!user || ![ROLES.EMPLOYER, ROLES.JOB_SEEKER, ROLES.ADMIN].includes(user.role)) {
+    throw new ApiError(403, "Not allowed to view application.");
+  }
+
+  const app = await applicationRepository.findByIdPopulated(applicationId);
+  if (!app) {
+    throw new ApiError(404, "Application not found.");
+  }
+
+  if (user.role === ROLES.ADMIN) return app;
+
+  if (user.role === ROLES.JOB_SEEKER) {
+    if (app.applicant?._id?.toString() !== user._id.toString()) {
+      throw new ApiError(403, "Not allowed to view this application.");
+    }
+    return app;
+  }
+
+  // Employer: only job owner can view.
+  if (app.job?.employer?.toString() !== user._id.toString()) {
+    throw new ApiError(403, "Not allowed to view applications for this job.");
+  }
+  return app;
+}
+
 module.exports = {
   submitApplication,
   getMyApplications,
@@ -196,5 +222,6 @@ module.exports = {
   updateApplicationStatus,
   adminGetAllApplications,
   employerGetShortlistedApplications,
+  getApplicationByIdForUser,
 };
 
