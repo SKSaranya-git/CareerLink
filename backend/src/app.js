@@ -11,6 +11,7 @@ const jobRoutes = require("./routes/jobRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const applicationRoutes = require("./modules/application/application.routes");
 const applicationNoteRoutes = require("./modules/applicationNote/applicationNote.routes");
+const interviewScheduleRoutes = require("./modules/interviewSchedule/interviewSchedule.routes");
 const swaggerSpec = require("./config/swagger");
 const errorMiddleware = require("./middlewares/errorMiddleware");
 
@@ -52,6 +53,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes);
+app.use("/api/interviews", interviewScheduleRoutes);
 // Includes nested routes: /api/applications/:applicationId/notes and /api/application-notes/:noteId
 app.use("/api", applicationNoteRoutes);
 app.use("/api/admin", adminRoutes);
