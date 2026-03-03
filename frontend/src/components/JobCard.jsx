@@ -1,4 +1,4 @@
-export default function JobCard({ job, isActive, onClick }) {
+export default function JobCard({ job, isActive, onClick, canApply = false, isApplied = false, onApply }) {
   return (
     <div
       className={`job-card-selectable ${isActive ? "active" : ""}`}
@@ -26,6 +26,27 @@ export default function JobCard({ job, isActive, onClick }) {
           LKR {job.salary}
         </span>
       </div>
+
+      {canApply && (
+        <div style={{ marginTop: "0.8rem", display: "flex", justifyContent: "flex-end" }}>
+          {isApplied ? (
+            <button className="btn secondary-btn" type="button" disabled>
+              Applied ✓
+            </button>
+          ) : (
+            <button
+              className="btn"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onApply?.(job._id);
+              }}
+            >
+              Apply Now
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
