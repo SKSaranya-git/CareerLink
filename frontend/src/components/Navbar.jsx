@@ -26,7 +26,7 @@ export default function Navbar() {
         <a href="/#contact">Contact</a>
         <Link to="/jobs">Jobs</Link>
         {user && <Link to="/dashboard">Dashboard</Link>}
-        {user?.role === "employer" && <Link to="/post-job">Post Job</Link>}
+        {user?.role === "employer" && <Link to="/dashboard/post-job">Post Job</Link>}
         {user?.role === "admin" && <Link to="/dashboard/approvals">Approvals</Link>}
         {!user && <Link to="/login">Login</Link>}
         {!user && (
