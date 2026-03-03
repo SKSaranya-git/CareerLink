@@ -67,7 +67,7 @@ router.post(
  */
 router.post(
   "/login",
-  [body("email").isEmail().normalizeEmail(), body("password").notEmpty(), validateRequest],
+  [body("email").trim().isEmail().normalizeEmail(), body("password").notEmpty(), validateRequest],
   authController.login
 );
 

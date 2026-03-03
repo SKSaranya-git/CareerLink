@@ -67,6 +67,17 @@ router.patch(
   applicationController.updateStatus
 );
 
+router.delete(
+  "/:applicationId",
+  [
+    protect,
+    authorize(ROLES.EMPLOYER, ROLES.JOB_SEEKER, ROLES.ADMIN),
+    param("applicationId").isMongoId(),
+    validateRequest,
+  ],
+  applicationController.remove
+);
+
 // Admin
 router.get("/", [protect, authorize(ROLES.ADMIN)], applicationController.adminGetAll);
 

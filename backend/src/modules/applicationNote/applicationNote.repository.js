@@ -14,6 +14,10 @@ async function findById(noteId) {
   return ApplicationNote.findById(noteId);
 }
 
+async function findByIdPopulated(noteId) {
+  return ApplicationNote.findById(noteId).populate("employer", "name email");
+}
+
 async function updateById(noteId, payload) {
   return ApplicationNote.findByIdAndUpdate(noteId, payload, {
     new: true,
@@ -29,6 +33,7 @@ module.exports = {
   create,
   findByApplication,
   findById,
+  findByIdPopulated,
   updateById,
   deleteById,
 };

@@ -85,7 +85,8 @@ async function registerUser(payload) {
 }
 
 async function loginUser({ email, password }) {
-  const user = await User.findOne({ email });
+  const normalizedEmail = email?.toLowerCase().trim();
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) {
     throw new ApiError(401, "Invalid email or password.");
   }

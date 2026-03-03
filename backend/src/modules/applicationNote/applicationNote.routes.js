@@ -18,7 +18,10 @@ router.post(
     param("applicationId").isMongoId(),
     body("text").notEmpty().withMessage("text is required."),
     body("rating").optional({ nullable: true }).isInt({ min: 1, max: 5 }),
-    body("tags").optional(),
+    body("tags")
+      .optional()
+      .custom((value) => Array.isArray(value) || typeof value === "string")
+      .withMessage("tags must be an array or comma-separated string."),
     validateRequest,
   ],
   applicationNoteController.create
@@ -31,6 +34,12 @@ router.get(
 );
 
 // Standalone resource for update/delete.
+router.get(
+  "/application-notes/:noteId",
+  [protect, authorize(ROLES.EMPLOYER), param("noteId").isMongoId(), validateRequest],
+  applicationNoteController.getById
+);
+
 router.patch(
   "/application-notes/:noteId",
   [
@@ -39,7 +48,10 @@ router.patch(
     param("noteId").isMongoId(),
     body("text").optional().isString(),
     body("rating").optional({ nullable: true }).isInt({ min: 1, max: 5 }),
-    body("tags").optional(),
+    body("tags")
+      .optional()
+      .custom((value) => Array.isArray(value) || typeof value === "string")
+      .withMessage("tags must be an array or comma-separated string."),
     validateRequest,
   ],
   applicationNoteController.update
