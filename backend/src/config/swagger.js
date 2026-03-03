@@ -26,7 +26,8 @@ const swaggerDefinition = {
 
 const options = {
   swaggerDefinition,
-  apis: ["./src/routes/*.js"],
+  // Include route annotations from both classic and modular route files.
+  apis: ["./src/routes/*.js", "./src/modules/**/*.routes.js"],
 };
 
 module.exports = swaggerJSDoc(options);
