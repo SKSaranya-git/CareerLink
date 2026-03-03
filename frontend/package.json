@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "axios": "^1.13.5",
-    "jobboard": "file:..",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^6.30.3"
