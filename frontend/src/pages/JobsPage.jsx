@@ -6,10 +6,6 @@ import { useAuth } from "../context/AuthContext";
 export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -39,40 +35,42 @@ export default function JobsPage() {
     submitting: false,
   });
 
-  const loadJobs = async (pageNum = 1) => {
-    if (pageNum === 1) setLoading(true);
-    else setLoadingMore(true);
+  const loadJobs = async () => {
+    setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (search) params.set("search", search);
-      params.set("page", String(pageNum));
-      params.set("limit", "10");
-      const { data } = await api.get(`/jobs?${params.toString()}`);
-      if (pageNum === 1) {
-        setJobs(data.jobs);
-        if (data.jobs.length > 0 && !selectedJobId) {
-          setSelectedJobId(data.jobs[0]._id);
+      // Load all pages so the default view always showcases every job in DB.
+      const pageSize = 100;
+      let currentPage = 1;
+      let totalPages = 1;
+      let allJobs = [];
+
+      do {
+        const params = new URLSearchParams();
+        params.set("page", String(currentPage));
+        params.set("limit", String(pageSize));
+
+        const { data } = await api.get(`/jobs?${params.toString()}`);
+        allJobs = [...allJobs, ...(data.jobs || [])];
+        totalPages = data.totalPages || 1;
+        currentPage += 1;
+      } while (currentPage <= totalPages);
+
+      setJobs(allJobs);
+      setSelectedJobId((prevSelectedId) => {
+        if (prevSelectedId && allJobs.some((job) => job._id === prevSelectedId)) {
+          return prevSelectedId;
         }
-      } else {
-        setJobs((prev) => [...prev, ...data.jobs]);
-      }
-      setPage(data.page);
-      setTotalCount(data.totalCount);
-      setHasMore(data.page < data.totalPages);
+        return allJobs[0]?._id || null;
+      });
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
-  const loadMore = () => {
-    if (hasMore && !loadingMore) loadJobs(page + 1);
-  };
-
   useEffect(() => {
-    loadJobs(1);
+    loadJobs();
     // eslint-disable-next-line
   }, []);
 
@@ -92,7 +90,25 @@ export default function JobsPage() {
 
   // Client-side filtering
   const filteredJobs = useMemo(() => {
-    return jobs.filter(job => {
+    return jobs.filter((job) => {
+      if (search.trim()) {
+        const query = search.trim().toLowerCase();
+        const searchableText = [
+          job.title,
+          job.description,
+          job.responsibilities,
+          job.requirements,
+          job.location,
+          job.employer?.companyName,
+          job.employer?.name,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        if (!searchableText.includes(query)) return false;
+      }
+
       if (minSalary && job.salary < Number(minSalary)) return false;
       if (jobType) {
         if (Array.isArray(job.employmentType)) {
@@ -113,9 +129,18 @@ export default function JobsPage() {
         if (datePosted === "30d" && diffDays > 30) return false;
       }
 
+      if (experienceLevel && job.experienceLevel) {
+        if (job.experienceLevel !== experienceLevel) return false;
+      }
+
       return true;
     });
-  }, [jobs, minSalary, jobType, experienceLevel, datePosted]);
+  }, [jobs, search, minSalary, jobType, experienceLevel, datePosted]);
+
+  const hasActiveFilters = Boolean(
+    search.trim() || minSalary || jobType || experienceLevel || datePosted
+  );
+  const visibleJobs = hasActiveFilters ? filteredJobs : jobs;
 
   // Keep selected job in sync
   const selectedJob = useMemo(() => {
@@ -258,7 +283,7 @@ export default function JobsPage() {
             <option value="30d">Past month</option>
           </select>
         </div>
-        <button className="btn" onClick={() => loadJobs(1)}>Find Jobs</button>
+        <button className="btn" onClick={loadJobs}>Find Jobs</button>
       </div>
 
       {message && (
@@ -273,33 +298,25 @@ export default function JobsPage() {
         <div className="jobs-layout">
           {/* LEFT PANE: List */}
           <div className="jobs-list-pane">
-            {filteredJobs.length === 0 ? (
+            {visibleJobs.length === 0 ? (
               <p style={{ color: "#6b7280" }}>No jobs match your criteria.</p>
             ) : (
               <>
-                {filteredJobs.map((job) => (
+                {visibleJobs.map((job) => (
                   <JobCard
                     key={job._id}
                     job={job}
                     isActive={selectedJobId === job._id}
                     onClick={() => setSelectedJobId(job._id)}
+                    canApply={user?.role === "job_seeker"}
+                    isApplied={appliedJobIds.has(job._id)}
+                    onApply={openApply}
                   />
                 ))}
 
                 <div style={{ padding: "0.75rem 1rem", textAlign: "center", color: "#6b7280", fontSize: "0.85rem" }}>
-                  Showing {filteredJobs.length} of {totalCount} jobs
+                  Showing {visibleJobs.length} of {jobs.length} jobs
                 </div>
-
-                {hasMore && (
-                  <button
-                    className="btn secondary-btn"
-                    onClick={loadMore}
-                    disabled={loadingMore}
-                    style={{ width: "100%", marginTop: "0.25rem" }}
-                  >
-                    {loadingMore ? "Loading..." : "Load More Jobs"}
-                  </button>
-                )}
               </>
             )}
           </div>
@@ -347,9 +364,9 @@ export default function JobsPage() {
                         </button>
                       )
                     ) : (
-                      <button className="btn secondary-btn" disabled title="Only job seekers can apply">
-                        Apply Now
-                      </button>
+                      <p className="dash-muted" style={{ margin: 0 }}>
+                        Login as a job seeker to apply for this job.
+                      </p>
                     )}
                     {user?.role === "job_seeker" && (
                       <button
