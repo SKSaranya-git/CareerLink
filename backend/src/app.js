@@ -11,7 +11,7 @@ const jobRoutes = require("./routes/jobRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const applicationRoutes = require("./modules/application/application.routes");
 const applicationNoteRoutes = require("./modules/applicationNote/applicationNote.routes");
-const interviewScheduleRoutes = require("./modules/interviewSchedule/interviewSchedule.routes");
+const interviewScheduleRoutes = require("./modules/InterviewSchedule/interviewSchedule.routes");
 const swaggerSpec = require("./config/swagger");
 const errorMiddleware = require("./middlewares/errorMiddleware");
 
