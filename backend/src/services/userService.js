@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Job = require("../models/Job");
 const ApiError = require("../utils/ApiError");
 
 async function getProfile(userId) {
@@ -58,9 +59,39 @@ async function deleteUserByAdmin(userId) {
   }
 }
 
+async function saveJob(userId, jobId) {
+  const job = await Job.findById(jobId);
+  if (!job) {
+    throw new ApiError(404, "Job not found.");
+  }
+  await User.findByIdAndUpdate(userId, { $addToSet: { savedJobs: jobId } });
+  return { message: "Job saved successfully." };
+}
+
+async function unsaveJob(userId, jobId) {
+  await User.findByIdAndUpdate(userId, { $pull: { savedJobs: jobId } });
+  return { message: "Job unsaved successfully." };
+}
+
+async function getSavedJobs(userId) {
+  const user = await User.findById(userId)
+    .populate({
+      path: "savedJobs",
+      populate: { path: "employer", select: "name email companyName" },
+    })
+    .select("savedJobs");
+  if (!user) {
+    throw new ApiError(404, "User not found.");
+  }
+  return user.savedJobs;
+}
+
 module.exports = {
   getProfile,
   updateProfile,
   getAllUsers,
   deleteUserByAdmin,
+  saveJob,
+  unsaveJob,
+  getSavedJobs,
 };

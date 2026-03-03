@@ -56,10 +56,40 @@ async function uploadProfileImage(req, res, next) {
   }
 }
 
+async function saveJob(req, res, next) {
+  try {
+    const result = await userService.saveJob(req.user.id, req.params.jobId);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function unsaveJob(req, res, next) {
+  try {
+    const result = await userService.unsaveJob(req.user.id, req.params.jobId);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getSavedJobs(req, res, next) {
+  try {
+    const savedJobs = await userService.getSavedJobs(req.user.id);
+    res.status(200).json({ count: savedJobs.length, savedJobs });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getProfile,
   updateProfile,
   getAllUsers,
   deleteUser,
   uploadProfileImage,
+  saveJob,
+  unsaveJob,
+  getSavedJobs,
 };
