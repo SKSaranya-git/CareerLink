@@ -100,6 +100,18 @@ async function getById(req, res, next) {
   }
 }
 
+async function remove(req, res, next) {
+  try {
+    await applicationService.deleteApplicationForUser({
+      user: req.user,
+      applicationId: req.params.applicationId,
+    });
+    res.status(200).json({ message: "Application deleted successfully." });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   submitApplication,
   getMyApplications,
@@ -108,5 +120,6 @@ module.exports = {
   adminGetAll,
   employerGetShortlisted,
   getById,
+  remove,
 };
 

@@ -215,6 +215,35 @@ async function getApplicationByIdForUser({ user, applicationId }) {
   return app;
 }
 
+async function deleteApplicationForUser({ user, applicationId }) {
+  if (!user || ![ROLES.EMPLOYER, ROLES.JOB_SEEKER, ROLES.ADMIN].includes(user.role)) {
+    throw new ApiError(403, "Not allowed to delete application.");
+  }
+
+  const app = await applicationRepository.findByIdPopulated(applicationId);
+  if (!app) {
+    throw new ApiError(404, "Application not found.");
+  }
+
+  if (user.role === ROLES.ADMIN) {
+    await applicationRepository.deleteById(applicationId);
+    return;
+  }
+
+  if (user.role === ROLES.JOB_SEEKER) {
+    if (app.applicant?._id?.toString() !== user._id.toString()) {
+      throw new ApiError(403, "Not allowed to delete this application.");
+    }
+    await applicationRepository.deleteById(applicationId);
+    return;
+  }
+
+  if (app.job?.employer?.toString() !== user._id.toString()) {
+    throw new ApiError(403, "Not allowed to delete applications for this job.");
+  }
+  await applicationRepository.deleteById(applicationId);
+}
+
 module.exports = {
   submitApplication,
   getMyApplications,
@@ -223,5 +252,6 @@ module.exports = {
   adminGetAllApplications,
   employerGetShortlistedApplications,
   getApplicationByIdForUser,
+  deleteApplicationForUser,
 };
 

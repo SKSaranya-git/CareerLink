@@ -55,6 +55,10 @@ async function updateStatus(applicationId, status) {
     .populate("applicant", "name email contactNumber");
 }
 
+async function deleteById(applicationId) {
+  return Application.findByIdAndDelete(applicationId);
+}
+
 module.exports = {
   findById,
   findByIdPopulated,
@@ -65,5 +69,6 @@ module.exports = {
   findAll,
   findByJobIdsAndStatus,
   updateStatus,
+  deleteById,
 };
 

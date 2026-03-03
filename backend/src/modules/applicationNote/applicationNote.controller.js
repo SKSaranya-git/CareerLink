@@ -25,6 +25,18 @@ async function listByApplication(req, res, next) {
   }
 }
 
+async function getById(req, res, next) {
+  try {
+    const note = await applicationNoteService.getNoteById({
+      noteId: req.params.noteId,
+      employerUser: req.user,
+    });
+    res.status(200).json({ note });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function update(req, res, next) {
   try {
     const note = await applicationNoteService.updateNote({
@@ -53,6 +65,7 @@ async function remove(req, res, next) {
 module.exports = {
   create,
   listByApplication,
+  getById,
   update,
   remove,
 };
