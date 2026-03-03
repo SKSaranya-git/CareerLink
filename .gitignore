@@ -9,6 +9,7 @@ frontend/.env
 # Build folders
 dist/
 build/
+backend/uploads/
 
 # Logs
 logs
