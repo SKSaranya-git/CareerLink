@@ -48,6 +48,23 @@ async function listNotes({ applicationId, employerUser }) {
   return applicationNoteRepository.findByApplication(applicationId);
 }
 
+async function getNoteById({ noteId, employerUser }) {
+  if (!employerUser || employerUser.role !== ROLES.EMPLOYER) {
+    throw new ApiError(403, "Only employers can view notes.");
+  }
+
+  const note = await applicationNoteRepository.findByIdPopulated(noteId);
+  if (!note) throw new ApiError(404, "Note not found.");
+
+  await assertEmployerOwnsApplication({ applicationId: note.application, employerUser });
+
+  if (note.employer?._id?.toString() !== employerUser._id.toString()) {
+    throw new ApiError(403, "You can view only your own notes.");
+  }
+
+  return note;
+}
+
 async function updateNote({ noteId, employerUser, payload }) {
   if (!employerUser || employerUser.role !== ROLES.EMPLOYER) {
     throw new ApiError(403, "Only employers can update notes.");
@@ -101,6 +118,7 @@ async function deleteNote({ noteId, employerUser }) {
 module.exports = {
   createNote,
   listNotes,
+  getNoteById,
   updateNote,
   deleteNote,
 };
