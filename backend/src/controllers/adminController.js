@@ -1,8 +1,164 @@
 const User = require("../models/User");
 const Job = require("../models/Job");
 const Application = require("../models/Application");
+const Notification = require("../models/Notification");
 const ApiError = require("../utils/ApiError");
 const { sendEmployerDecisionEmail } = require("../services/emailService");
+
+function getLastNDates(days) {
+  const dates = [];
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    d.setHours(0, 0, 0, 0);
+    dates.push(d);
+  }
+
+  return dates;
+}
+
+function buildSeriesMap(dates) {
+  const map = {};
+  dates.forEach((date) => {
+    map[date.toISOString().slice(0, 10)] = 0;
+  });
+  return map;
+}
+
+async function getAnalytics(req, res, next) {
+  try {
+    const dates = getLastNDates(7);
+    const rangeStart = new Date(dates[0]);
+    const rangeEnd = new Date(dates[dates.length - 1]);
+    rangeEnd.setHours(23, 59, 59, 999);
+
+    const [
+      userSeriesRaw,
+      jobSeriesRaw,
+      applicationSeriesRaw,
+      notificationSeriesRaw,
+      usersByRole,
+      appsByStatus,
+      totalNotifications,
+      allNotifications,
+    ] =
+      await Promise.all([
+        User.aggregate([
+          { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+              count: { $sum: 1 },
+            },
+          },
+        ]),
+        Job.aggregate([
+          { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+              count: { $sum: 1 },
+            },
+          },
+        ]),
+        Application.aggregate([
+          { $match: { appliedAt: { $gte: rangeStart, $lte: rangeEnd } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: "%Y-%m-%d", date: "$appliedAt" } },
+              count: { $sum: 1 },
+            },
+          },
+        ]),
+        Notification.aggregate([
+          { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+              count: { $sum: 1 },
+            },
+          },
+        ]),
+        User.aggregate([{ $group: { _id: "$role", count: { $sum: 1 } } }]),
+        Application.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+        Notification.countDocuments(),
+        Notification.find().select("targetRoles acknowledgedBy").lean(),
+      ]);
+
+    const usersMap = buildSeriesMap(dates);
+    const jobsMap = buildSeriesMap(dates);
+    const applicationsMap = buildSeriesMap(dates);
+    const notificationsMap = buildSeriesMap(dates);
+
+    userSeriesRaw.forEach((row) => {
+      usersMap[row._id] = row.count;
+    });
+    jobSeriesRaw.forEach((row) => {
+      jobsMap[row._id] = row.count;
+    });
+    applicationSeriesRaw.forEach((row) => {
+      applicationsMap[row._id] = row.count;
+    });
+    notificationSeriesRaw.forEach((row) => {
+      notificationsMap[row._id] = row.count;
+    });
+
+    const timeline = dates.map((date) => {
+      const key = date.toISOString().slice(0, 10);
+      return {
+        day: key,
+        users: usersMap[key] || 0,
+        jobs: jobsMap[key] || 0,
+        applications: applicationsMap[key] || 0,
+        notifications: notificationsMap[key] || 0,
+      };
+    });
+
+    const roleBreakdown = usersByRole.map((row) => ({ role: row._id, count: row.count }));
+    const applicationStatusBreakdown = appsByStatus.map((row) => ({
+      status: row._id,
+      count: row.count,
+    }));
+    const usersByRoleMap = usersByRole.reduce((acc, row) => {
+      acc[row._id] = row.count;
+      return acc;
+    }, {});
+    const totalTargetedRecipients = allNotifications.reduce((sum, notification) => {
+      const recipientsForNotification = (notification.targetRoles || []).reduce(
+        (roleSum, role) => roleSum + (usersByRoleMap[role] || 0),
+        0
+      );
+      return sum + recipientsForNotification;
+    }, 0);
+    const totalAcknowledgements = allNotifications.reduce((sum, notification) => {
+      return sum + ((notification.acknowledgedBy || []).length || 0);
+    }, 0);
+    const notificationsLast7Days = timeline.reduce((sum, day) => sum + day.notifications, 0);
+    const acknowledgementRate =
+      totalTargetedRecipients > 0
+        ? Math.round((totalAcknowledgements / totalTargetedRecipients) * 100)
+        : 0;
+
+    res.status(200).json({
+      timeline,
+      roleBreakdown,
+      applicationStatusBreakdown,
+      notificationSummary: {
+        totalNotifications,
+        notificationsLast7Days,
+        totalTargetedRecipients,
+        totalAcknowledgements,
+        acknowledgementRate,
+      },
+      generatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 async function getOverview(req, res, next) {
   try {
@@ -103,6 +259,7 @@ async function reviewEmployerRegistration(req, res, next) {
 }
 
 module.exports = {
+  getAnalytics,
   getOverview,
   getPendingEmployers,
   reviewEmployerRegistration,
