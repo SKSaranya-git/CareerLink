@@ -22,6 +22,7 @@ import EmployerShortlistedPage from "./pages/dashboard/EmployerShortlistedPage";
 import ScheduleInterviewPage from "./pages/dashboard/ScheduleInterviewPage";
 import SavedJobsPage from "./pages/dashboard/SavedJobsPage";
 import MyInterviewsPage from "./pages/dashboard/MyInterviewsPage";
+import AdminNotificationsPage from "./pages/dashboard/AdminNotificationsPage";
 
 function App() {
   return (
@@ -43,6 +44,14 @@ function App() {
             }
           >
             <Route index element={<DashboardOverviewPage />} />
+            <Route
+              path="analytics"
+              element={
+                <RoleRoute allowedRoles={["admin"]}>
+                  <DashboardOverviewPage />
+                </RoleRoute>
+              }
+            />
             <Route path="profile" element={<ProfilePage />} />
             <Route
               path="my-applications"
@@ -105,6 +114,14 @@ function App() {
               element={
                 <RoleRoute allowedRoles={["admin"]}>
                   <ApprovalsPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="notifications"
+              element={
+                <RoleRoute allowedRoles={["admin"]}>
+                  <AdminNotificationsPage />
                 </RoleRoute>
               }
             />
