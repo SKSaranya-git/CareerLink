@@ -1,16 +1,17 @@
 const express = require("express");
 const { param } = require("express-validator");
+const notificationController = require("../controllers/notificationController");
 const { protect } = require("../middlewares/authMiddleware");
 const validateRequest = require("../middlewares/validateRequest");
-const notificationController = require("../controllers/notificationController");
 
 const router = express.Router();
 
-router.get("/me", protect, notificationController.listForCurrentUser);
-router.post(
+router.get("/my", protect, notificationController.getMyNotifications);
+
+router.patch(
   "/:id/acknowledge",
   [protect, param("id").isMongoId(), validateRequest],
-  notificationController.acknowledge
+  notificationController.acknowledgeNotification
 );
 
 module.exports = router;
