@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
+const { ROLES } = require("../utils/constants");
 
-const adminNotificationSchema = new mongoose.Schema(
+const notificationSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -12,46 +13,30 @@ const adminNotificationSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      maxlength: 1500,
+      maxlength: 1200,
     },
-    type: {
-      type: String,
-      enum: ["info", "success", "warning", "critical"],
-      default: "info",
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    audienceRoles: {
+    targetRoles: {
       type: [String],
-      enum: ["all", "admin", "employer", "job_seeker"],
-      default: ["all"],
+      enum: Object.values(ROLES),
+      required: true,
+      validate: [
+        (roles) => Array.isArray(roles) && roles.length > 0,
+        "Select at least one target role.",
+      ],
     },
-    acknowledgedBy: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        acknowledgedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    acknowledgedBy: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      default: [],
+    },
   },
   { timestamps: true }
 );
 
-adminNotificationSchema.index({ createdAt: -1 });
-adminNotificationSchema.index({ audienceRoles: 1, isActive: 1 });
-adminNotificationSchema.index({ "acknowledgedBy.user": 1 });
+notificationSchema.index({ targetRoles: 1, createdAt: -1 });
 
-module.exports = mongoose.model("AdminNotification", adminNotificationSchema);
+module.exports = mongoose.model("Notification", notificationSchema);
