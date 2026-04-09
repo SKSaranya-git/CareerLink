@@ -49,6 +49,12 @@ Tailwind is installed for **spec compliance** (utility framework). It is loaded 
 
 ---
 
+## Testing instruction report
+
+This section satisfies the assignment requirement to document how tests are run. Commands and environment details are below under **Testing**.
+
+---
+
 ## Testing
 
 ### Environment
@@ -127,6 +133,38 @@ See `backend/src/docs/README.md` for endpoint notes. Interactive docs: `/api/doc
 
 ---
 
-## Deployment
+## Deployment report
 
-Add your own section here (per assignment): backend host, frontend host, env variable names (not values), live URLs, screenshots.
+### Backend (example: Railway, Render, or similar)
+
+1. Create a new **Web Service** from this repository (root or `backend` directory per host docs).
+2. Set the **start command** to `npm start` (from `backend`) and Node 18+.
+3. Configure **environment variables** (names only; do not commit secret values):
+
+| Variable | Purpose |
+|----------|---------|
+| `PORT` | HTTP port (often provided by the host) |
+| `NODE_ENV` | `production` |
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_SECRET` | Secret for signing JWTs |
+| `CLIENT_URL` | Deployed frontend URL (CORS) |
+| `SMTP_*` / `EMAIL_FROM` | Optional: email (see `backend/.env.example`) |
+
+4. Note the public **API base URL** (for example `https://your-api.up.railway.app`).
+
+### Frontend (example: Vercel, Netlify, or Firebase Hosting)
+
+1. Create a project linked to this repo; set **root** to `frontend` if the host allows monorepo subfolders.
+2. Build command: `npm run build`. Output directory: `dist` (Vite default).
+3. Set **`VITE_API_BASE_URL`** to your deployed API (for example `https://your-api.up.railway.app/api`).
+
+### Live URLs (fill in for submission)
+
+- **Backend API:** _add your deployed API base URL_
+- **Frontend app:** _add your deployed site URL (e.g. Vercel default domain)_
+
+### Evidence
+
+Add **screenshots** of the running deployed frontend and a successful API health check (`GET /health`) in your submission pack as required by the module.
+
+Repository reference: [CareerLink on GitHub](https://github.com/SKSaranya-git/CareerLink.git).

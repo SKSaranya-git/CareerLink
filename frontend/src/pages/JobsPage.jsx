@@ -28,9 +28,14 @@ function persistSavedJobIds(user, idsSet) {
   }
 }
 
+const JOBS_PAGE_SIZE = 15;
+
 export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalJobsCount, setTotalJobsCount] = useState(0);
 
   const [search, setSearch] = useState("");
   const [minSalary, setMinSalary] = useState("");
@@ -57,20 +62,41 @@ export default function JobsPage() {
     submitting: false,
   });
 
-  const loadJobs = async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get("/jobs");
-      setJobs(data.jobs || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchJobs = useCallback(
+    async (forPage, filterOverride) => {
+      const src = filterOverride ?? { search, minSalary, jobType, datePosted };
+      const qSearch = String(src.search ?? "").trim();
+      const qMin = src.minSalary ?? "";
+      const qType = src.jobType ?? "";
+      const qDate = src.datePosted ?? "";
+      setLoading(true);
+      try {
+        const { data } = await api.get("/jobs", {
+          params: {
+            page: forPage,
+            limit: JOBS_PAGE_SIZE,
+            search: qSearch || undefined,
+            minSalary: qMin || undefined,
+            employmentType: qType || undefined,
+            datePosted: qDate || undefined,
+          },
+        });
+        setJobs(data.jobs || []);
+        setTotalPages(Math.max(1, data.totalPages || 1));
+        setTotalJobsCount(typeof data.total === "number" ? data.total : (data.jobs || []).length);
+        setPage(forPage);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [search, minSalary, jobType, datePosted]
+  );
 
   useEffect(() => {
-    loadJobs();
+    fetchJobs(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial list only; use Find Jobs to query with filters
   }, []);
 
   useEffect(() => {
@@ -91,55 +117,12 @@ export default function JobsPage() {
     loadApplied();
   }, [user]);
 
-  const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
-      if (search.trim()) {
-        const query = search.trim().toLowerCase();
-        const searchableText = [
-          job.title,
-          job.description,
-          job.responsibilities,
-          job.requirements,
-          job.location,
-          job.employer?.companyName,
-          job.employer?.name,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-
-        if (!searchableText.includes(query)) return false;
-      }
-
-      if (minSalary && job.salary < Number(minSalary)) return false;
-      if (jobType) {
-        if (Array.isArray(job.employmentType)) {
-          if (!job.employmentType.includes(jobType)) return false;
-        } else if (job.employmentType !== jobType) {
-          return false;
-        }
-      }
-
-      if (datePosted) {
-        const postedDate = new Date(job.createdAt);
-        const now = new Date();
-        const diffTime = Math.abs(now - postedDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (datePosted === "24h" && diffDays > 1) return false;
-        if (datePosted === "7d" && diffDays > 7) return false;
-        if (datePosted === "30d" && diffDays > 30) return false;
-      }
-
-      if (experienceLevel && job.experienceLevel) {
-        if (job.experienceLevel !== experienceLevel) return false;
-      }
-
-      return true;
-    });
-  }, [jobs, search, minSalary, jobType, experienceLevel, datePosted]);
+  const visibleJobs = useMemo(() => {
+    if (!experienceLevel) return jobs;
+    return jobs.filter((job) => job.experienceLevel === experienceLevel);
+  }, [jobs, experienceLevel]);
 
   const hasActiveFilters = Boolean(search.trim() || minSalary || jobType || experienceLevel || datePosted);
-  const visibleJobs = hasActiveFilters ? filteredJobs : jobs;
 
   useEffect(() => {
     setSelectedJobId((prev) => {
@@ -210,6 +193,7 @@ export default function JobsPage() {
     setJobType("");
     setExperienceLevel("");
     setDatePosted("");
+    fetchJobs(1, { search: "", minSalary: "", jobType: "", datePosted: "" });
   };
 
   const toggleSaveJob = useCallback(
@@ -273,7 +257,7 @@ export default function JobsPage() {
             <option value="30d">Past month</option>
           </select>
         </div>
-        <button type="button" className="btn jobs-find-btn" onClick={loadJobs}>
+        <button type="button" className="btn jobs-find-btn" onClick={() => fetchJobs(1)}>
           Find Jobs
         </button>
         <button type="button" className="btn secondary-btn" onClick={clearFilters}>
@@ -282,6 +266,31 @@ export default function JobsPage() {
       </div>
 
       {message && !applyForm.isOpen ? <div className="jobs-feedback">{message}</div> : null}
+
+      {!loading && totalPages > 1 ? (
+        <div className="jobs-pagination" role="navigation" aria-label="Job list pages">
+          <button
+            type="button"
+            className="btn secondary-btn"
+            disabled={page <= 1}
+            onClick={() => fetchJobs(Math.max(1, page - 1))}
+          >
+            Previous
+          </button>
+          <span className="jobs-pagination-meta">
+            Page {page} of {totalPages}
+            {totalJobsCount > 0 ? ` · ${totalJobsCount} job${totalJobsCount === 1 ? "" : "s"}` : ""}
+          </span>
+          <button
+            type="button"
+            className="btn secondary-btn"
+            disabled={page >= totalPages}
+            onClick={() => fetchJobs(Math.min(totalPages, page + 1))}
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
 
       {loading ? (
         <p className="dash-muted">Loading jobs...</p>
