@@ -27,14 +27,51 @@ async function createJob(payload, employerId) {
 }
 
 async function getAllJobs(query) {
-  const searchFilter = {};
-  if (query.search) {
-    searchFilter.$text = { $search: query.search };
+  const page = Math.max(1, parseInt(String(query.page ?? "1"), 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(String(query.limit ?? "50"), 10) || 50));
+
+  const filter = {};
+  const search = String(query.search ?? "").trim();
+  if (search) {
+    filter.$text = { $search: search };
   }
 
-  return Job.find(searchFilter)
-    .populate("employer", "name email companyName")
-    .sort({ createdAt: -1 });
+  const minSalary = query.minSalary != null && String(query.minSalary).trim() !== "" ? Number(query.minSalary) : null;
+  if (Number.isFinite(minSalary) && minSalary >= 0) {
+    filter.salary = { $gte: minSalary };
+  }
+
+  const employmentType = String(query.employmentType ?? query.jobType ?? "").trim();
+  if (employmentType) {
+    filter.employmentType = employmentType;
+  }
+
+  const datePosted = String(query.datePosted ?? "").trim();
+  if (datePosted === "24h" || datePosted === "7d" || datePosted === "30d") {
+    const days = datePosted === "24h" ? 1 : datePosted === "7d" ? 7 : 30;
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    filter.createdAt = { $gte: since };
+  }
+
+  const total = await Job.countDocuments(filter);
+
+  let q = Job.find(filter).populate("employer", "name email companyName");
+  if (search) {
+    q = q
+      .select({ score: { $meta: "textScore" } })
+      .sort({ score: { $meta: "textScore" }, createdAt: -1 });
+  } else {
+    q = q.sort({ createdAt: -1 });
+  }
+
+  const jobs = await q
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean();
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  return { jobs, total, page, limit, totalPages };
 }
 
 async function getJobById(jobId) {

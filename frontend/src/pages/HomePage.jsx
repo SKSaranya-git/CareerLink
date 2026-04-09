@@ -46,6 +46,13 @@ export default function HomePage() {
             <h3>Verified Employer Access</h3>
             <p>Employer registrations are reviewed by admins for platform trust and quality.</p>
           </div>
+          <div className="card">
+            <h3>Applications and hiring offers</h3>
+            <p>
+              Track applications end-to-end—from resume upload and status updates to employer notes,
+              shortlists, and interview scheduling—all in one place.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -104,6 +111,13 @@ export default function HomePage() {
               applications, and profile updates with clarity."
             </p>
             <strong>- Malithi, University Career Advisor</strong>
+          </div>
+          <div className="card">
+            <p>
+              "We closed three offers faster once we could see every application, add internal feedback,
+              and move candidates from shortlist to interview without losing context."
+            </p>
+            <strong>- Dineth, Talent Acquisition Lead</strong>
           </div>
         </div>
       </section>

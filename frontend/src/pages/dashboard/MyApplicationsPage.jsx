@@ -4,6 +4,7 @@ import api from "../../api/axios";
 export default function MyApplicationsPage() {
   const [applications, setApplications] = useState([]);
   const [error, setError] = useState("");
+  const [withdrawingId, setWithdrawingId] = useState(null);
 
   const serverBase = useMemo(() => {
     const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -26,6 +27,26 @@ export default function MyApplicationsPage() {
     }
     load();
   }, []);
+
+  async function withdrawApplication(applicationId) {
+    if (
+      !window.confirm(
+        "Withdraw this application? You can apply again later, but this removes your submission while it is still pending."
+      )
+    ) {
+      return;
+    }
+    setWithdrawingId(applicationId);
+    setError("");
+    try {
+      await api.delete(`/applications/${applicationId}`);
+      setApplications((prev) => prev.filter((a) => a._id !== applicationId));
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to withdraw application.");
+    } finally {
+      setWithdrawingId(null);
+    }
+  }
 
   const resumeHref = (resume) => {
     if (!resume) return "";
@@ -84,6 +105,7 @@ export default function MyApplicationsPage() {
                     <th>Status</th>
                     <th>Applied</th>
                     <th>Resume</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -101,6 +123,20 @@ export default function MyApplicationsPage() {
                           </a>
                         ) : (
                           "-"
+                        )}
+                      </td>
+                      <td>
+                        {app.status === "pending" ? (
+                          <button
+                            type="button"
+                            className="btn secondary-btn"
+                            disabled={withdrawingId === app._id}
+                            onClick={() => withdrawApplication(app._id)}
+                          >
+                            {withdrawingId === app._id ? "Withdrawing…" : "Withdraw"}
+                          </button>
+                        ) : (
+                          <span className="dash-muted">—</span>
                         )}
                       </td>
                     </tr>

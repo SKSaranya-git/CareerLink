@@ -25,5 +25,16 @@ describeIntegration("GET /api/jobs (integration)", () => {
     const res = await request(app).get("/api/jobs");
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body.jobs)).toBe(true);
+    expect(typeof res.body.total).toBe("number");
+    expect(typeof res.body.page).toBe("number");
+    expect(typeof res.body.totalPages).toBe("number");
+  });
+
+  test("supports pagination query params", async () => {
+    const res = await request(app).get("/api/jobs").query({ page: 1, limit: 2 });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.page).toBe(1);
+    expect(res.body.limit).toBe(2);
+    expect(res.body.jobs.length).toBeLessThanOrEqual(2);
   });
 });

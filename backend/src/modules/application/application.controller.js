@@ -100,6 +100,18 @@ async function getById(req, res, next) {
   }
 }
 
+async function withdrawMyApplication(req, res, next) {
+  try {
+    await applicationService.withdrawMyApplication({
+      applicantUser: req.user,
+      applicationId: req.params.applicationId,
+    });
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   submitApplication,
   getMyApplications,
@@ -108,5 +120,6 @@ module.exports = {
   adminGetAll,
   employerGetShortlisted,
   getById,
+  withdrawMyApplication,
 };
 

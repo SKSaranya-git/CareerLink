@@ -14,10 +14,31 @@ const router = express.Router();
  * @swagger
  * /api/jobs:
  *   get:
- *     summary: View all jobs (public)
+ *     summary: List jobs (public) with search, filters, and pagination
  *     tags: [Jobs]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 50, maximum: 100 }
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *         description: Full-text search (title, description, location, etc.)
+ *       - in: query
+ *         name: minSalary
+ *         schema: { type: number }
+ *       - in: query
+ *         name: employmentType
+ *         schema: { type: string, enum: [full-time, part-time, internship, contract] }
+ *       - in: query
+ *         name: datePosted
+ *         schema: { type: string, enum: [24h, 7d, 30d] }
  *     responses:
- *       200: { description: OK }
+ *       200:
+ *         description: Paginated job list
  */
 router.get("/", jobController.getAllJobs);
 
