@@ -67,6 +67,18 @@ router.patch(
   applicationController.updateStatus
 );
 
+// Job seeker: withdraw (delete) own application while still pending
+router.delete(
+  "/:applicationId",
+  [
+    protect,
+    authorize(ROLES.JOB_SEEKER),
+    param("applicationId").isMongoId(),
+    validateRequest,
+  ],
+  applicationController.withdrawMyApplication
+);
+
 // Admin
 router.get("/", [protect, authorize(ROLES.ADMIN)], applicationController.adminGetAll);
 

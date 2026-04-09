@@ -2,6 +2,7 @@ const Job = require("../../models/Job");
 const ApiError = require("../../utils/ApiError");
 const { ROLES } = require("../../utils/constants");
 const applicationRepository = require("./application.repository");
+const applicationNoteRepository = require("../applicationNote/applicationNote.repository");
 const {
   sendApplicationReceivedEmail,
   sendApplicationStatusUpdatedEmail,
@@ -189,6 +190,31 @@ async function employerGetShortlistedApplications(employerUser) {
   return applicationRepository.findByJobIdsAndStatus(myJobIds, "shortlisted");
 }
 
+async function withdrawMyApplication({ applicantUser, applicationId }) {
+  if (!applicantUser || applicantUser.role !== ROLES.JOB_SEEKER) {
+    throw new ApiError(403, "Only job seekers can withdraw an application.");
+  }
+
+  const app = await applicationRepository.findById(applicationId);
+  if (!app) {
+    throw new ApiError(404, "Application not found.");
+  }
+
+  if (app.applicant.toString() !== applicantUser._id.toString()) {
+    throw new ApiError(403, "You can withdraw only your own applications.");
+  }
+
+  if (app.status !== "pending") {
+    throw new ApiError(
+      400,
+      "You can withdraw only while the application is pending (before the employer reviews it)."
+    );
+  }
+
+  await applicationNoteRepository.deleteManyByApplication(applicationId);
+  await applicationRepository.deleteById(applicationId);
+}
+
 async function getApplicationByIdForUser({ user, applicationId }) {
   if (!user || ![ROLES.EMPLOYER, ROLES.JOB_SEEKER, ROLES.ADMIN].includes(user.role)) {
     throw new ApiError(403, "Not allowed to view application.");
@@ -222,6 +248,7 @@ module.exports = {
   updateApplicationStatus,
   adminGetAllApplications,
   employerGetShortlistedApplications,
+  withdrawMyApplication,
   getApplicationByIdForUser,
 };
 
