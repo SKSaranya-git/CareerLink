@@ -104,14 +104,20 @@ export default function Navbar() {
       <nav className="nav-links">
         {!user ? (
           <>
-            <Link to="/">Home</Link>
-            <a href="/#about">About</a>
-            <a href="/#contact">Contact</a>
-            <Link to="/jobs">Jobs</Link>
-            <Link to="/login">Login</Link>
-            <Link to="/register" className="btn small-btn">
-              Register
-            </Link>
+            <div className="nav-main-links">
+              <Link to="/">Home</Link>
+              <a href="/#about">About</a>
+              <a href="/#contact">Contact</a>
+              <Link to="/jobs">Jobs</Link>
+            </div>
+            <div className="nav-auth-actions">
+              <Link to="/login" className="nav-cta nav-cta-login">
+                Login
+              </Link>
+              <Link to="/register" className="nav-cta nav-cta-register">
+                Register
+              </Link>
+            </div>
           </>
         ) : (
           <>
