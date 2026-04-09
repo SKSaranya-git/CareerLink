@@ -302,6 +302,10 @@ body {
   padding: 0 1.1rem;
 }
 
+.home-page--pro {
+  max-width: 1180px;
+}
+
 .hero-section {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
@@ -311,6 +315,11 @@ body {
   border-radius: 20px;
   padding: 2.4rem;
   box-shadow: 0 12px 30px rgba(17, 24, 39, 0.18);
+}
+
+.hero-section--pro {
+  gap: 2.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .eyebrow {
@@ -331,15 +340,55 @@ body {
   line-height: 1.6;
 }
 
+.hero-content--pro {
+  max-width: 620px;
+}
+
+.hero-content--pro h1 {
+  font-size: 2.2rem;
+  line-height: 1.14;
+}
+
 .hero-actions {
   display: flex;
   gap: 0.8rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.hero-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.2rem;
+}
+
+.hero-proof-item {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 0.8rem 0.7rem;
+}
+
+.hero-proof-item strong {
+  display: block;
+  color: #ffffff;
+  font-size: 1.05rem;
+  margin-bottom: 0.2rem;
+}
+
+.hero-proof-item span {
+  color: #dbe4ff;
+  font-size: 0.83rem;
 }
 
 .hero-visual {
   position: relative;
   min-height: 320px;
+}
+
+.hero-visual--pro {
+  min-height: 340px;
 }
 
 .hero-main-image {
@@ -361,6 +410,11 @@ body {
   box-shadow: 0 8px 20px rgba(17, 24, 39, 0.15);
 }
 
+.hero-card--pro {
+  border: 1px solid #e5e7eb;
+  max-width: 280px;
+}
+
 .hero-card h3 {
   margin-bottom: 0.4rem;
 }
@@ -369,13 +423,98 @@ body {
   margin-top: 2.8rem;
 }
 
+.section-block--pro {
+  margin-top: 3rem;
+}
+
 .section-block h2 {
   margin-bottom: 0.8rem;
+}
+
+.section-head {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 1.4rem;
+}
+
+.section-head h2 {
+  color: #101828;
+  line-height: 1.25;
+}
+
+.section-head--left {
+  text-align: left;
+  margin: 0 0 1rem;
 }
 
 /* Center the "What CareerLink offers" heading */
 #about > h2 {
   text-align: center;
+}
+
+.pro-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.pro-feature-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  padding: 1.25rem;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+}
+
+.pro-feature-card h3 {
+  margin-bottom: 0.45rem;
+  color: #0f172a;
+}
+
+.pro-feature-card p {
+  color: #475467;
+  line-height: 1.65;
+}
+
+.hiring-flow {
+  background: linear-gradient(160deg, #f8faff 0%, #eef3ff 100%);
+  border: 1px solid #dde6ff;
+  border-radius: 18px;
+  padding: 1.4rem;
+}
+
+.hiring-flow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 0.9rem;
+}
+
+.flow-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.flow-number {
+  display: inline-block;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: #e6ecff;
+  color: #233f9b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.55rem;
+}
+
+.flow-card h3 {
+  margin-bottom: 0.35rem;
+}
+
+.flow-card p {
+  color: #475467;
+  line-height: 1.6;
 }
 
 .stats-banner {
@@ -401,11 +540,19 @@ body {
   align-items: center;
 }
 
+.split-feature--pro {
+  align-items: stretch;
+}
+
 .feature-image-wrap {
   background: #ffffff;
   border-radius: 16px;
   padding: 0.6rem;
   box-shadow: 0 8px 22px rgba(17, 24, 39, 0.1);
+}
+
+.feature-image-wrap--pro {
+  border: 1px solid #e5e7eb;
 }
 
 .feature-image {
@@ -422,6 +569,17 @@ body {
   box-shadow: 0 8px 22px rgba(17, 24, 39, 0.1);
 }
 
+.feature-copy--pro {
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-copy--pro .btn {
+  align-self: flex-start;
+  margin-top: 0.6rem;
+}
+
 .feature-copy h2 {
   margin-bottom: 0.7rem;
 }
@@ -434,6 +592,46 @@ body {
 
 .testimonial-section h2 {
   text-align: center;
+}
+
+.testimonial-section--pro {
+  margin-top: 3rem;
+}
+
+.testimonials-grid .quote-card {
+  background: #f9fbff;
+}
+
+.quote-card p {
+  margin-bottom: 0.75rem;
+}
+
+.quote-card strong {
+  color: #24398a;
+}
+
+.final-cta {
+  background: linear-gradient(140deg, #13235d 0%, #1d317e 70%, #2d47ad 100%);
+  border-radius: 18px;
+  padding: 1.7rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.final-cta h2 {
+  margin-bottom: 0;
+  color: #ffffff;
+}
+
+.final-cta .eyebrow {
+  color: #ffd84d;
+}
+
+.final-cta .secondary-btn {
+  border-color: rgba(255, 255, 255, 0.34);
 }
 
 .testimonial-section .card p {
@@ -3351,12 +3549,42 @@ th {
     grid-template-columns: 1fr;
   }
 
+  .hero-content--pro h1 {
+    font-size: 1.9rem;
+  }
+
+  .hero-proof-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-card--pro {
+    right: 8px;
+    bottom: -8px;
+  }
+
+  .section-head {
+    text-align: left;
+  }
+
+  .pro-feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hiring-flow-grid {
+    grid-template-columns: 1fr;
+  }
+
   .split-feature {
     grid-template-columns: 1fr;
   }
 
   .stats-banner {
     grid-template-columns: 1fr;
+  }
+
+  .final-cta {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .footer-grid {
