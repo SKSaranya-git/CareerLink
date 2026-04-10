@@ -258,21 +258,28 @@ Use this section for **AF / LMS** expectations: everything is either in this REA
 
 ### Embedded deployment evidence (GitHub README)
 
-Add screenshots with these **exact filenames** under `docs/evidence/` (see table). Until you add them, GitHub may show a missing image for that row.
+Screenshots live under `docs/evidence/` (see table). All listed files are committed for submission evidence.
 
 | File | Capture |
 |------|---------|
 | `01-frontend-vercel.png` | Vercel **Production** deployment (domains + preview) |
 | `02-api-health.png` | `/health` with `"status":"ok"` and **`database.connected": true`** |
 | `03-api-root.png` | API **root** (`/`) welcome JSON on Railway |
-
-*(Optional extras for your Word report: Swagger at `/api/docs`, Railway “successful deploy” dashboard.)*
+| `04-swagger.png` | Swagger UI **`/api/docs`** (production) |
+| `05-railway-deploy.png` | Railway **Deployment successful** / **ACTIVE** |
+| `06-frontend-live.png` | Live site **`career-link-wine.vercel.app`** (address bar visible) |
 
 ![Vercel production deployment](docs/evidence/01-frontend-vercel.png)
 
 ![API health with MongoDB connected](docs/evidence/02-api-health.png)
 
 ![API root welcome JSON (Railway)](docs/evidence/03-api-root.png)
+
+![Swagger API documentation (production)](docs/evidence/04-swagger.png)
+
+![Railway deployment successful](docs/evidence/05-railway-deploy.png)
+
+![Production frontend — live Vercel URL](docs/evidence/06-frontend-live.png)
 
 ---
 
@@ -291,8 +298,8 @@ Add screenshots with these **exact filenames** under `docs/evidence/` (see table
 - [ ] README includes setup, API documentation, deployment report, testing instruction report, **live URLs** (above)
 - [ ] Environment variable **names** documented; **no secrets** committed
 - [ ] Screenshots added to [`docs/evidence/`](docs/evidence/) and committed (see [Embedded deployment evidence](#embedded-deployment-evidence-github-readme))
-- [ ] **LMS:** Word document from [`docs/LMS-Submission-Template.md`](docs/LMS-Submission-Template.md) — group ID, all names & student IDs, repo link, embedded screenshots — uploaded to submission link
+- [ ] **LMS:** Word document from [`docs/LMS-Submission-Template.md`](docs/LMS-Submission-Template.md) — group ID, all names & student IDs, repo link, embedded screenshots (use files in `docs/evidence/`) — **upload to LMS submission link**
 - [ ] Git history: meaningful commits and workflow (branches/PRs as required by module)
-- [ ] `git push origin main` after final changes
+- [ ] `git push origin main` after final changes (evidence images included)
 
 Repository: [https://github.com/SKSaranya-git/CareerLink.git](https://github.com/SKSaranya-git/CareerLink.git)

@@ -51,10 +51,16 @@ All source code, README (setup, API documentation, deployment report, testing re
    *[Insert picture here]*
 
 3. **API root** — browser on `https://careerlink-production.up.railway.app` (welcome JSON).  
-   *[Insert picture here — same as repo `docs/evidence/03-api-root.png`]*
+   *[Insert `docs/evidence/03-api-root.png`]*
 
-4. *(Optional)* **Swagger** at `/api/docs` or **Railway** deploy success.  
-   *[Insert picture here]*
+4. **Swagger** — `https://careerlink-production.up.railway.app/api/docs`  
+   *[Insert `docs/evidence/04-swagger.png`]*
+
+5. **Railway** — deployment successful / ACTIVE  
+   *[Insert `docs/evidence/05-railway-deploy.png`]*
+
+6. **Live frontend** — `https://career-link-wine.vercel.app` with address bar visible  
+   *[Insert `docs/evidence/06-frontend-live.png`]*
 
 ## Testing evidence (optional paste)
 
