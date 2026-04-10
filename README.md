@@ -150,6 +150,8 @@ See `backend/src/docs/README.md` for endpoint notes. Interactive docs: `/api/doc
 5. **Settings** → **Networking** → **Generate Domain** (otherwise the service stays “unexposed” and has no public URL).
 6. Redeploy after saving variables.
 
+**Healthcheck failures (build OK, deploy OK, then “Healthcheck failure”):** The API must listen on **`0.0.0.0`** and **`MONGO_URI` must be set** in Railway **Variables**. For **MongoDB Atlas**, open **Network Access** and allow **`0.0.0.0/0`** (or Railway’s egress) so the container can connect; otherwise the app may not finish booting in time for checks.
+
 #### Other hosts (Render, Fly.io, etc.)
 
 Use **Root Directory** `backend` (or equivalent), **start command** `npm start`, Node **18+**, and the same variables as below.
