@@ -137,9 +137,24 @@ See `backend/src/docs/README.md` for endpoint notes. Interactive docs: `/api/doc
 
 ### Backend (example: Railway, Render, or similar)
 
-1. Create a new **Web Service** from this repository (root or `backend` directory per host docs).
-2. Set the **start command** to `npm start` (from `backend`) and Node 18+.
-3. Configure **environment variables** (names only; do not commit secret values):
+#### Railway (monorepo)
+
+1. **New project** → deploy from **GitHub** → select **CareerLink**.
+2. **Root Directory:** leave as **repository root** (empty) **or** set to `backend` — both work:
+   - **Root (recommended):** uses the repo `Dockerfile` + `railway.json` / `railway.toml` at the top level.
+   - **`backend` only:** uses `backend/Dockerfile` and `backend/railway.json`.
+3. **If you see “Error creating build plan with Railpack”:** Railway is using **Railpack** instead of Docker. Fix it either way:
+   - **A (best):** Push the latest repo (includes `railway.toml` + root `Dockerfile`), set **Root Directory** to **empty**, then **Redeploy**.
+   - **B:** Open the service → **Settings** → **Build** → set **Builder** to **Dockerfile** (not Railpack / Auto) → **Dockerfile path** `Dockerfile` if root, or `backend/Dockerfile` if Root Directory is `backend` → save and redeploy.
+4. **Variables** tab: add `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL` (your Vercel URL), `NODE_ENV=production`. Railway injects `PORT` automatically.
+5. **Settings** → **Networking** → **Generate Domain** (otherwise the service stays “unexposed” and has no public URL).
+6. Redeploy after saving variables.
+
+#### Other hosts (Render, Fly.io, etc.)
+
+Use **Root Directory** `backend` (or equivalent), **start command** `npm start`, Node **18+**, and the same variables as below.
+
+**Environment variables** (names only; do not commit secret values):
 
 | Variable | Purpose |
 |----------|---------|
@@ -150,7 +165,7 @@ See `backend/src/docs/README.md` for endpoint notes. Interactive docs: `/api/doc
 | `CLIENT_URL` | Deployed frontend URL (CORS) |
 | `SMTP_*` / `EMAIL_FROM` | Optional: email (see `backend/.env.example`) |
 
-4. Note the public **API base URL** (for example `https://your-api.up.railway.app`).
+Note the public **API base URL** (for example `https://your-api.up.railway.app`).
 
 ### Frontend (example: Vercel, Netlify, or Firebase Hosting)
 
