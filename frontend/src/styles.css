@@ -746,6 +746,16 @@ select {
   border: 1px solid #d2d9f8;
 }
 
+.edit-btn {
+  background: #e8f1ff;
+  color: #1e4fbf;
+  border: 1px solid #b6cdfd;
+}
+
+.edit-btn:hover {
+  background: #d7e8ff;
+}
+
 /* Dashboard shell */
 .dash-shell {
   display: grid;
@@ -2752,7 +2762,7 @@ th {
 
 .employer-jobs-bottom-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -2822,6 +2832,129 @@ th {
   font-weight: 700;
   color: #101828;
   margin-bottom: 0.2rem;
+}
+
+.employer-interview-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.employer-interview-controls {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.employer-interview-select-wrap {
+  position: relative;
+  min-width: 190px;
+}
+
+.employer-interview-select {
+  width: 100%;
+  appearance: none;
+  border: 1px solid #7c838f;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #0e4fc2;
+  font-size: 0.98rem;
+  font-weight: 800;
+  padding: 0.85rem 2.3rem 0.85rem 1.05rem;
+  cursor: pointer;
+}
+
+.employer-interview-select:focus {
+  outline: none;
+  border-color: #3158b3;
+  box-shadow: 0 0 0 3px rgba(49, 88, 179, 0.15);
+}
+
+.employer-interview-select-caret {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 800;
+  color: #0e4fc2;
+  pointer-events: none;
+}
+
+.employer-interview-panel {
+  margin-top: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.employer-interview-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  border-bottom: 1px solid #d6d9df;
+  padding: 0.8rem 0.9rem 0;
+  gap: 0.3rem;
+}
+
+.employer-interview-tab {
+  border: none;
+  background: transparent;
+  color: #424f61;
+  font-size: 1.05rem;
+  font-weight: 500;
+  padding: 0.45rem 0.7rem 0.7rem;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.employer-interview-tab.active {
+  color: #111827;
+  font-weight: 800;
+  border-bottom-color: #2f2f2f;
+}
+
+.employer-interview-content {
+  min-height: 380px;
+  padding: 1rem;
+}
+
+.employer-interview-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.employer-interview-item {
+  border: 1px solid #d3dbe8;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.employer-interview-item-title {
+  margin: 0 0 0.22rem;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: #101828;
+}
+
+.employer-interview-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.employer-interview-pagination {
+  border-top: 1px solid #d6d9df;
+  padding: 0.95rem 1rem 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.employer-interview-modal-actions {
+  justify-content: flex-end;
 }
 
 .dash-actions-row {
@@ -3863,6 +3996,18 @@ th {
 
   .employer-jobs-bottom-grid {
     grid-template-columns: 1fr;
+  }
+
+  .employer-interview-content {
+    min-height: 280px;
+  }
+
+  .employer-interview-item {
+    flex-direction: column;
+  }
+
+  .employer-interview-item-actions {
+    justify-content: flex-start;
   }
 
   .employer-jobs-trend {
