@@ -247,7 +247,7 @@ If your lecturer requires a **single PDF**, paste these sections into the docume
 
 - **Architecture:** React functional components and hooks.
 - **State:** Global auth/session via **React Context** (`AuthContext`); local state with `useState` / `useReducer` in pages and components.
-- **Session:** JWT stored and sent with API requests (see `frontend/src/api/axios.js`); protected routes via route wrappers; role-based UI (job seeker / employer / admin).
+- **Session:** JWT stored and sent with API requests (see `frontend/src/api/axios.js`); protected routes via route wrappers; auth state in `frontend/src/context/AuthContext.jsx`; role-based UI (job seeker / employer / admin).
 - **Deployment:** Production build on **Vercel**; API base URL from `VITE_API_BASE_URL`.
 
 ---
