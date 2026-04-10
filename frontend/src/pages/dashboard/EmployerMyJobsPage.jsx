@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios";
+import EditJobModal from "../../components/dashboard/EditJobModal";
 
 function formatEmploymentType(type) {
   if (type == null || (Array.isArray(type) && type.length === 0)) return "-";
@@ -55,8 +56,14 @@ export default function EmployerMyJobsPage() {
   const [jobs, setJobs] = useState([]);
   const [interviews, setInterviews] = useState([]);
   const [applicationsByJob, setApplicationsByJob] = useState({});
+  const [editingJob, setEditingJob] = useState(null);
+  const [deletingJobId, setDeletingJobId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [jobSearch, setJobSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState("all");
 
   useEffect(() => {
     async function load() {
@@ -213,6 +220,82 @@ export default function EmployerMyJobsPage() {
     [jobs, applicationsByJob]
   );
 
+  const typeOptions = useMemo(() => {
+    const types = new Set();
+    jobs.forEach((job) => {
+      const values = Array.isArray(job.employmentType)
+        ? job.employmentType
+        : job.employmentType
+          ? [job.employmentType]
+          : [];
+      values.forEach((type) => types.add(String(type).trim().toLowerCase()));
+    });
+    return Array.from(types).filter(Boolean).sort();
+  }, [jobs]);
+
+  const locationOptions = useMemo(() => {
+    const locations = new Set(
+      jobs
+        .map((job) => String(job.location || "").trim())
+        .filter(Boolean)
+    );
+    return Array.from(locations).sort((a, b) => a.localeCompare(b));
+  }, [jobs]);
+
+  const filteredJobs = useMemo(() => {
+    const keyword = jobSearch.trim().toLowerCase();
+    return jobs.filter((job) => {
+      const normalizedTypes = Array.isArray(job.employmentType)
+        ? job.employmentType.map((type) => String(type).trim().toLowerCase())
+        : job.employmentType
+          ? [String(job.employmentType).trim().toLowerCase()]
+          : [];
+
+      const matchesKeyword =
+        keyword.length === 0 ||
+        [job.title, job.location, job.description]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(keyword));
+
+      const matchesType = typeFilter === "all" || normalizedTypes.includes(typeFilter);
+      const matchesLocation =
+        locationFilter === "all" || String(job.location || "").trim() === locationFilter;
+
+      return matchesKeyword && matchesType && matchesLocation;
+    });
+  }, [jobs, jobSearch, typeFilter, locationFilter]);
+
+  const handleJobUpdated = (updatedJob) => {
+    setJobs((prev) => prev.map((job) => (job._id === updatedJob._id ? updatedJob : job)));
+    setMessage("Job updated successfully.");
+    setError("");
+  };
+
+  const handleDeleteJob = async (job) => {
+    const confirmed = window.confirm(`Delete \"${job.title}\"? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    setDeletingJobId(job._id);
+    setError("");
+    setMessage("");
+
+    try {
+      await api.delete(`/jobs/${job._id}`);
+      setJobs((prev) => prev.filter((item) => item._id !== job._id));
+      setApplicationsByJob((prev) => {
+        const next = { ...prev };
+        delete next[job._id];
+        return next;
+      });
+      setInterviews((prev) => prev.filter((item) => item?.job?._id !== job._id));
+      setMessage("Job deleted successfully.");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete the job.");
+    } finally {
+      setDeletingJobId("");
+    }
+  };
+
   return (
     <div className="dash-panel">
       <div className="dash-panel-head">
@@ -229,6 +312,7 @@ export default function EmployerMyJobsPage() {
       </div>
 
       {error ? <p className="error">{error}</p> : null}
+  {message ? <p className="dash-success">{message}</p> : null}
       {loading ? <p className="dash-muted">Loading jobs dashboard...</p> : null}
 
       {!loading && jobs.length === 0 ? (
@@ -267,6 +351,45 @@ export default function EmployerMyJobsPage() {
                   View all
                 </Link>
               </div>
+              <div className="employer-jobs-filter-row">
+                <input
+                  className="employer-jobs-filter-input"
+                  type="text"
+                  placeholder="Search by title, location, or description"
+                  value={jobSearch}
+                  onChange={(e) => setJobSearch(e.target.value)}
+                />
+                <select
+                  className="employer-jobs-filter-select"
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                >
+                  <option value="all">All Types</option>
+                  {typeOptions.map((type) => (
+                    <option key={type} value={type}>
+                      {type
+                        .split("-")
+                        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                        .join(" ")}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="employer-jobs-filter-select"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                >
+                  <option value="all">All Locations</option>
+                  {locationOptions.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="dash-muted employer-jobs-filter-meta">
+                Showing {filteredJobs.length} of {jobs.length} opportunities
+              </p>
               <div className="table-wrap">
                 <table>
                   <thead>
@@ -280,7 +403,7 @@ export default function EmployerMyJobsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {jobs.map((job) => (
+                    {filteredJobs.map((job) => (
                       <tr key={job._id}>
                         <td>{job.title}</td>
                         <td>{job.location || "-"}</td>
@@ -292,68 +415,93 @@ export default function EmployerMyJobsPage() {
                         </td>
                         <td>{(applicationsByJob[job._id] || []).length}</td>
                         <td>
-                          <Link
-                            className="dash-link-inline"
-                            to={`/dashboard/job/${job._id}/applications`}
-                          >
-                            View Applications
-                          </Link>
+                          <div className="dash-actions-row">
+                            <Link
+                              className="dash-link-inline"
+                              to={`/dashboard/job/${job._id}/applications`}
+                            >
+                              View Applications
+                            </Link>
+                            <button
+                              className="btn secondary-btn small-btn"
+                              type="button"
+                              onClick={() => setEditingJob(job)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn danger small-btn"
+                              type="button"
+                              disabled={deletingJobId === job._id}
+                              onClick={() => handleDeleteJob(job)}
+                            >
+                              {deletingJobId === job._id ? "Deleting..." : "Delete"}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
+                    {filteredJobs.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="dash-muted">
+                          No opportunities match your search/filter.
+                        </td>
+                      </tr>
+                    ) : null}
                   </tbody>
                 </table>
               </div>
+              
             </section>
-
-            <aside className="employer-jobs-side-col">
-              <section className="dash-panel employer-jobs-inner-panel employer-jobs-side-panel">
-                <div className="dash-panel-head">
-                  <h3>Interviews Today</h3>
-                  <p className="dash-muted">{new Date().toLocaleDateString()}</p>
-                </div>
-                {todayInterviews.length === 0 ? (
-                  <p className="dash-muted">No interviews scheduled for today.</p>
-                ) : (
-                  <div className="employer-jobs-interview-list">
-                    {todayInterviews.map((item) => (
-                      <article className="employer-jobs-interview-item" key={item._id}>
-                        <div className="employer-jobs-interview-time">
-                          {new Date(item.startsAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                        <div>
-                          <p className="employer-jobs-activity-title">
-                            {item.applicant?.name || "Candidate"}
-                          </p>
-                          <p className="dash-muted">{item.job?.title || "Interview"}</p>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section className="dash-panel employer-jobs-insight-panel">
-                <p className="dash-muted employer-jobs-insight-kicker">Analytics Insight</p>
-                <h3>Hiring performance snapshot</h3>
-                <p className="dash-muted">
-                  Avg. applications per listing: <strong>{avgApplicationsPerJob}</strong>
-                </p>
-                <p className="dash-muted">
-                  Hired candidates: <strong>{overview.hiredCount}</strong>
-                </p>
-                <p className="dash-muted">
-                  Listings with applicants: <strong>{jobsWithApplicants}</strong> / {jobs.length}
-                </p>
-                <p className="dash-muted">
-                  Avg salary benchmark: <strong>{formatCurrency(overview.averageSalary)}</strong>
-                </p>
-              </section>
-            </aside>
           </div>
+
+          <div className="employer-jobs-main-bottom">
+                <section className="employer-jobs-sub-panel employer-jobs-side-panel">
+                  <div className="dash-panel-head">
+                    <h3>Interviews Today</h3>
+                    <p className="dash-muted">{new Date().toLocaleDateString()}</p>
+                  </div>
+                  {todayInterviews.length === 0 ? (
+                    <p className="dash-muted">No interviews scheduled for today.</p>
+                  ) : (
+                    <div className="employer-jobs-interview-list">
+                      {todayInterviews.map((item) => (
+                        <article className="employer-jobs-interview-item" key={item._id}>
+                          <div className="employer-jobs-interview-time">
+                            {new Date(item.startsAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                          <div>
+                            <p className="employer-jobs-activity-title">
+                              {item.applicant?.name || "Candidate"}
+                            </p>
+                            <p className="dash-muted">{item.job?.title || "Interview"}</p>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <section className="employer-jobs-sub-panel employer-jobs-insight-panel">
+                  <p className="dash-muted employer-jobs-insight-kicker">Analytics Insight</p>
+                  <h3>Hiring performance snapshot</h3>
+                  <p className="dash-muted">
+                    Avg. applications per listing: <strong>{avgApplicationsPerJob}</strong>
+                  </p>
+                  <p className="dash-muted">
+                    Hired candidates: <strong>{overview.hiredCount}</strong>
+                  </p>
+                  <p className="dash-muted">
+                    Listings with applicants: <strong>{jobsWithApplicants}</strong> / {jobs.length}
+                  </p>
+                  <p className="dash-muted">
+                    Avg salary benchmark: <strong>{formatCurrency(overview.averageSalary)}</strong>
+                  </p>
+                </section>
+              </div>
 
           <div className="employer-jobs-bottom-grid">
             <section className="dash-panel employer-jobs-inner-panel">
@@ -407,6 +555,14 @@ export default function EmployerMyJobsPage() {
           </div>
         </div>
       )}
+
+      {editingJob ? (
+        <EditJobModal
+          job={editingJob}
+          onClose={() => setEditingJob(null)}
+          onUpdated={handleJobUpdated}
+        />
+      ) : null}
     </div>
   );
 }

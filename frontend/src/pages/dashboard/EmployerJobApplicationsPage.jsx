@@ -3,6 +3,13 @@ import { Link, useParams } from "react-router-dom";
 import api from "../../api/axios";
 import SingleApplicationNotePanel from "../../components/dashboard/SingleApplicationNotePanel";
 
+function getStatusLabel(status) {
+  if (status === "shortlisted") return "Approved";
+  if (status === "rejected") return "Rejected";
+  if (status === "hired") return "Hired";
+  return "Pending";
+}
+
 export default function EmployerJobApplicationsPage() {
   const { jobId } = useParams();
   const [applications, setApplications] = useState([]);
@@ -32,8 +39,7 @@ export default function EmployerJobApplicationsPage() {
     setMessage("");
     try {
       const { data } = await api.get(`/applications/job/${jobId}`);
-      // This page shows only "pending" applications. Approved/rejected are handled elsewhere.
-      setApplications((data.applications || []).filter((a) => a.status === "pending"));
+      setApplications(data.applications || []);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load applications.");
     }
@@ -51,8 +57,16 @@ export default function EmployerJobApplicationsPage() {
     try {
       const { data } = await api.patch(`/applications/${applicationId}/status`, { status });
       setMessage(data.message || "Status updated.");
-      // Remove from this list as soon as employer approves/rejects.
-      setApplications((prev) => prev.filter((a) => a._id !== applicationId));
+      setApplications((prev) =>
+        prev.map((item) => {
+          if (item._id !== applicationId) return item;
+          return {
+            ...item,
+            ...(data.application || {}),
+            status: data.application?.status || status,
+          };
+        })
+      );
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update status.");
     } finally {
@@ -61,11 +75,18 @@ export default function EmployerJobApplicationsPage() {
   };
 
   const overview = useMemo(() => {
+    const pendingCount = applications.filter((app) => app.status === "pending").length;
+    const approvedCount = applications.filter((app) => app.status === "shortlisted").length;
+    const rejectedCount = applications.filter((app) => app.status === "rejected").length;
+
     const withResume = applications.filter((app) => Boolean(app.resume)).length;
     const withCoverLetter = applications.filter((app) => Boolean((app.coverLetter || "").trim())).length;
     const notesAdded = applications.filter((app) => Boolean(noteSummaryByAppId[app._id])).length;
     return {
-      totalPending: applications.length,
+      totalApplications: applications.length,
+      pendingCount,
+      approvedCount,
+      rejectedCount,
       withResume,
       withCoverLetter,
       notesAdded,
@@ -86,20 +107,20 @@ export default function EmployerJobApplicationsPage() {
         <div className="applications-layout">
           <div className="applications-stats">
             <article className="applications-stat-card">
-              <p className="applications-stat-label">Pending Applications</p>
-              <p className="applications-stat-value">{overview.totalPending}</p>
+              <p className="applications-stat-label">Total Applications</p>
+              <p className="applications-stat-value">{overview.totalApplications}</p>
             </article>
             <article className="applications-stat-card">
-              <p className="applications-stat-label">Resumes Attached</p>
-              <p className="applications-stat-value">{overview.withResume}</p>
+              <p className="applications-stat-label">Approved</p>
+              <p className="applications-stat-value">{overview.approvedCount}</p>
             </article>
             <article className="applications-stat-card">
-              <p className="applications-stat-label">Cover Letters</p>
-              <p className="applications-stat-value">{overview.withCoverLetter}</p>
+              <p className="applications-stat-label">Rejected</p>
+              <p className="applications-stat-value">{overview.rejectedCount}</p>
             </article>
             <article className="applications-stat-card">
-              <p className="applications-stat-label">Notes Added</p>
-              <p className="applications-stat-value">{overview.notesAdded}</p>
+              <p className="applications-stat-label">Pending</p>
+              <p className="applications-stat-value">{overview.pendingCount}</p>
             </article>
           </div>
 
@@ -143,7 +164,9 @@ export default function EmployerJobApplicationsPage() {
                       <td>{app.email || app.applicant?.email || "-"}</td>
                       <td>{app.phone || app.applicant?.contactNumber || "-"}</td>
                       <td>
-                        <span className="app-status-chip">{app.status}</span>
+                        <span className={`app-status-chip ${app.status || "pending"}`}>
+                          {getStatusLabel(app.status)}
+                        </span>
                       </td>
                       <td>
                         {app.resume ? (
@@ -156,26 +179,30 @@ export default function EmployerJobApplicationsPage() {
                       </td>
                       <td style={{ maxWidth: 360, whiteSpace: "pre-wrap" }}>{app.coverLetter || "-"}</td>
                       <td>
-                        <div className="app-action-controls">
-                          <button
-                            className="btn"
-                            disabled={updatingId === app._id}
-                            onClick={() => updateStatus(app._id, "shortlisted")}
-                            title="Approve to interview (shortlist)"
-                            type="button"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            className="btn danger"
-                            disabled={updatingId === app._id}
-                            onClick={() => updateStatus(app._id, "rejected")}
-                            title="Reject applicant"
-                            type="button"
-                          >
-                            Reject
-                          </button>
-                        </div>
+                        {app.status === "pending" ? (
+                          <div className="app-action-controls">
+                            <button
+                              className="btn"
+                              disabled={updatingId === app._id}
+                              onClick={() => updateStatus(app._id, "shortlisted")}
+                              title="Approve to interview (shortlist)"
+                              type="button"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              className="btn danger"
+                              disabled={updatingId === app._id}
+                              onClick={() => updateStatus(app._id, "rejected")}
+                              title="Reject applicant"
+                              type="button"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="dash-muted">Reviewed</span>
+                        )}
                       </td>
                       <td>
                         <div className="app-note-controls">
