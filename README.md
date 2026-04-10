@@ -49,9 +49,31 @@ Tailwind is installed for **spec compliance** (utility framework). It is loaded 
 
 ---
 
-## Testing instruction report
+## Testing instruction report (SE3040)
 
-This section satisfies the assignment requirement to document how tests are run. Commands and environment details are below under **Testing**.
+This section satisfies the assignment requirement for **how to run tests** and **testing environment configuration**.
+
+### i. How to run unit tests
+
+From `backend/`, run `npm test` (see **Unit tests** below). No database is required for the default suite.
+
+### ii. Integration testing — setup and execution
+
+Requires `MONGO_URI` in `backend/.env` and `RUN_INTEGRATION=1`. Commands are under **Integration tests** below. Integration files live in `backend/src/tests/integration/`.
+
+### iii. Performance testing — setup and execution
+
+Start the API (`npm start` in `backend`), then in another terminal run `npm run test:perf` from `backend/`. Configuration: `backend/artillery.yml`.
+
+### iv. Testing environment configuration
+
+| Item | Detail |
+|------|--------|
+| Node.js | 18+ |
+| OS | Windows / macOS / Linux (commands shown for Windows PowerShell where relevant) |
+| Backend env file | `backend/.env` — `MONGO_URI`, `JWT_SECRET` for integration; unit tests do not require a live DB |
+| Integration opt-in | `RUN_INTEGRATION=1` so CI/local runs without Atlas do not fail |
+| Performance | API reachable at `config.target` in `artillery.yml` (default `http://localhost:5000`) |
 
 ---
 
@@ -129,7 +151,31 @@ No Jest/Vitest suite is configured for React yet; the course requirement is met 
 
 ## API documentation
 
-See `backend/src/docs/README.md` for endpoint notes. Interactive docs: `/api/docs`.
+### Interactive (Swagger)
+
+- **Local:** `http://localhost:5000/api/docs`
+- **Production:** [https://careerlink-production.up.railway.app/api/docs](https://careerlink-production.up.railway.app/api/docs)
+
+### Written reference
+
+See [`backend/src/docs/README.md`](backend/src/docs/README.md) for path-level notes, sample payloads, and auth expectations.
+
+### API endpoint overview (assignment summary)
+
+| Area | Base path | HTTP | Authentication |
+|------|-----------|------|----------------|
+| Health | `/health` | GET | None |
+| API root | `/` | GET | None (welcome JSON) |
+| Auth | `/api/auth` | POST (register, login, …) | Public / returns JWT |
+| Users | `/api/users` | GET, PATCH, … | Bearer JWT; role-based |
+| Jobs | `/api/jobs` | GET public; POST/PATCH/DELETE employer | Mixed |
+| Applications | `/api/applications` | POST, GET, PATCH, DELETE | Bearer JWT; seeker / employer / admin |
+| Application notes | `/api/applications/.../notes`, `/api/application-notes/...` | CRUD | Employer (job owner) |
+| Interviews | `/api/interviews` | CRUD-style | Authenticated |
+| Notifications | `/api/notifications` | Per routes | Authenticated |
+| Admin | `/api/admin` | Per routes | Admin role |
+
+**Authentication:** Protected routes expect header `Authorization: Bearer <JWT>` unless noted. **Request/response shapes** and status codes are defined in Swagger and in `backend/src/docs/README.md`.
 
 ---
 
@@ -169,19 +215,50 @@ Use **Root Directory** `backend` (or equivalent), **start command** `npm start`,
 
 Note the public **API base URL** (for example `https://your-api.up.railway.app`).
 
-### Frontend (example: Vercel, Netlify, or Firebase Hosting)
+### Frontend (Vercel)
 
-1. Create a project linked to this repo; set **root** to `frontend` if the host allows monorepo subfolders.
-2. Build command: `npm run build`. Output directory: `dist` (Vite default).
-3. Set **`VITE_API_BASE_URL`** to your deployed API (for example `https://your-api.up.railway.app/api`).
+1. Project linked to GitHub **CareerLink**; **root directory** set to `frontend` (monorepo).
+2. **Build:** `npm run build` — **output:** `dist`.
+3. **Environment variable (Production):** `VITE_API_BASE_URL` = `https://careerlink-production.up.railway.app/api`
 
-### Live URLs (fill in for submission)
+### Live URLs (submission)
 
-- **Backend API:** _add your deployed API base URL_
-- **Frontend app:** _add your deployed site URL (e.g. Vercel default domain)_
+| Service | URL |
+|---------|-----|
+| **Deployed backend API** | [https://careerlink-production.up.railway.app](https://careerlink-production.up.railway.app) |
+| **API health check** | [https://careerlink-production.up.railway.app/health](https://careerlink-production.up.railway.app/health) |
+| **Swagger (production)** | [https://careerlink-production.up.railway.app/api/docs](https://careerlink-production.up.railway.app/api/docs) |
+| **Deployed frontend** | [https://career-link-wine.vercel.app](https://career-link-wine.vercel.app) |
 
-### Evidence
+### Evidence (screenshots for report / LMS)
 
-Add **screenshots** of the running deployed frontend and a successful API health check (`GET /health`) in your submission pack as required by the module.
+Attach images that show:
 
-Repository reference: [CareerLink on GitHub](https://github.com/SKSaranya-git/CareerLink.git).
+1. **Production frontend** — browser on `https://career-link-wine.vercel.app` with address bar visible.
+2. **Production API health** — browser on `https://careerlink-production.up.railway.app/health` showing `"status":"ok"`.
+3. *(Optional)* **Swagger** — `.../api/docs` open in the browser.
+4. *(Optional)* **Vercel** deployment **Ready** and **Railway** deployment **successful** (dashboard screenshots).
+
+If your lecturer requires a **single PDF**, paste these sections into the document and embed the screenshots under **Deployment report** and **Testing instruction report**.
+
+---
+
+## Frontend: state management, session, deployment (SE3040 Part 2)
+
+- **Architecture:** React functional components and hooks.
+- **State:** Global auth/session via **React Context** (`AuthContext`); local state with `useState` / `useReducer` in pages and components.
+- **Session:** JWT stored and sent with API requests (see `frontend/src/api/axios.js`); protected routes via route wrappers; role-based UI (job seeker / employer / admin).
+- **Deployment:** Production build on **Vercel**; API base URL from `VITE_API_BASE_URL`.
+
+---
+
+## Submission checklist (group)
+
+- [ ] Source code on GitHub: [CareerLink](https://github.com/SKSaranya-git/CareerLink.git)
+- [ ] README includes setup, API documentation, deployment report, testing instruction report, **live URLs** (above)
+- [ ] Environment variable **names** documented; **no secrets** committed
+- [ ] Screenshots: deployed frontend + `/health` (and optional Swagger / dashboards)
+- [ ] Git history: meaningful commits and workflow (branches/PRs as required by module)
+- [ ] LMS PDF / report pack submitted if the module asks for files separate from GitHub
+
+Repository: [https://github.com/SKSaranya-git/CareerLink.git](https://github.com/SKSaranya-git/CareerLink.git)
