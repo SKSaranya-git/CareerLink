@@ -49,9 +49,21 @@ const jobSchema = new mongoose.Schema(
   { timestamps: true } // Adds createdAt and updatedAt automatically
 );
 
-// Text index for full-text search across job listings
-jobSchema.index({ title: "text", description: "text", location: "text" });
-// Compound index for efficient employer-specific queries
+// Legacy documents may store a single string; coerce before validation.
+jobSchema.pre("validate", function coerceEmploymentType() {
+  const v = this.employmentType;
+  if (typeof v === "string" && v.trim()) {
+    this.employmentType = [v.trim()];
+  }
+});
+
+jobSchema.index({
+  title: "text",
+  description: "text",
+  location: "text",
+  responsibilities: "text",
+  requirements: "text",
+});
 jobSchema.index({ employer: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Job", jobSchema);
