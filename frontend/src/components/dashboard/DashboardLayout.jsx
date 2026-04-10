@@ -52,6 +52,8 @@ export default function DashboardLayout() {
     if (path === "/dashboard/profile") return ["CareerLink", roleLabel, "Public Profile"];
     if (path === "/dashboard/settings") return ["CareerLink", roleLabel, "Settings"];
     if (path === "/dashboard/my-jobs") return ["CareerLink", "Employer", "My Jobs"];
+    if (path === "/dashboard/interviews") return ["CareerLink", "Employer", "Interview"];
+    if (path === "/dashboard/analytics") return ["CareerLink", "Employer", "Analytics"];
     if (path === "/dashboard/post-job") return ["CareerLink", "Employer", "Post a Job"];
     if (path === "/dashboard/shortlisted") return ["CareerLink", "Employer", "Shortlisted"];
     if (path.startsWith("/dashboard/job/") && path.endsWith("/applications")) {
@@ -120,6 +122,8 @@ export default function DashboardLayout() {
               <p className="dash-nav-title">Employer</p>
               <SidebarLink to="/dashboard/post-job" label="Post a Job" />
               <SidebarLink to="/dashboard/my-jobs" label="My Jobs" />
+              <SidebarLink to="/dashboard/interviews" label="Interview" />
+              <SidebarLink to="/dashboard/analytics" label="Analytics" />
               <SidebarLink to="/dashboard/shortlisted" label="Shortlisted" />
             </>
           )}

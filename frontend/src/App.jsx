@@ -19,6 +19,8 @@ import ProfilePublicPage from "./pages/dashboard/ProfilePublicPage";
 import ApprovalsPage from "./pages/dashboard/ApprovalsPage";
 import MyApplicationsPage from "./pages/dashboard/MyApplicationsPage";
 import EmployerMyJobsPage from "./pages/dashboard/EmployerMyJobsPage";
+import EmployerInterviewPage from "./pages/dashboard/EmployerInterviewPage";
+import EmployerAnalyticsPage from "./pages/dashboard/EmployerAnalyticsPage";
 import EmployerJobApplicationsPage from "./pages/dashboard/EmployerJobApplicationsPage";
 import EmployerShortlistedPage from "./pages/dashboard/EmployerShortlistedPage";
 import ApplicantSeekerProfilePage from "./pages/dashboard/ApplicantSeekerProfilePage";
@@ -86,6 +88,22 @@ function App() {
               element={
                 <RoleRoute allowedRoles={["employer"]}>
                   <PostJobPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="interviews"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <EmployerInterviewPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="analytics"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <EmployerAnalyticsPage />
                 </RoleRoute>
               }
             />

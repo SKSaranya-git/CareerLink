@@ -301,14 +301,11 @@ export default function EmployerMyJobsPage() {
       <div className="dash-panel-head">
         <div>
           <p className="dash-muted employer-jobs-kicker">Employer Workspace</p>
-          <h2>My Jobs Overview</h2>
+          <h2>Analytics</h2>
           <p className="dash-muted">
             Build great teams, track hiring progress, and keep every opportunity moving.
           </p>
         </div>
-        <Link className="dash-link-inline" to="/dashboard/post-job">
-          Post a job →
-        </Link>
       </div>
 
       {error ? <p className="error">{error}</p> : null}
@@ -319,124 +316,96 @@ export default function EmployerMyJobsPage() {
         <p className="dash-muted">No jobs posted yet.</p>
       ) : (
         <div className="employer-jobs-layout">
-          <div className="employer-jobs-main-grid">
-            <section className="dash-panel employer-jobs-inner-panel">
-              <div className="dash-panel-head">
-                <div>
-                  <h3>Active Opportunities</h3>
-                  <p className="dash-muted">Manage and monitor your ongoing recruitment cycles.</p>
-                </div>
-                <Link className="dash-link-inline" to="/dashboard/my-jobs">
-                  View all
-                </Link>
-              </div>
-              <div className="employer-jobs-filter-row">
-                <input
-                  className="employer-jobs-filter-input"
-                  type="text"
-                  placeholder="Search by title, location, or description"
-                  value={jobSearch}
-                  onChange={(e) => setJobSearch(e.target.value)}
-                />
-                <select
-                  className="employer-jobs-filter-select"
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                >
-                  <option value="all">All Types</option>
-                  {typeOptions.map((type) => (
-                    <option key={type} value={type}>
-                      {type
-                        .split("-")
-                        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                        .join(" ")}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="employer-jobs-filter-select"
-                  value={locationFilter}
-                  onChange={(e) => setLocationFilter(e.target.value)}
-                >
-                  <option value="all">All Locations</option>
-                  {locationOptions.map((location) => (
-                    <option key={location} value={location}>
-                      {location}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <p className="dash-muted employer-jobs-filter-meta">
-                Showing {filteredJobs.length} of {jobs.length} opportunities
+          <div className="employer-jobs-stats">
+            <article className="employer-jobs-stat-card">
+              <p className="employer-jobs-stat-label">Total Listings</p>
+              <p className="employer-jobs-stat-value">{overview.totalListings}</p>
+            </article>
+            <article className="employer-jobs-stat-card">
+              <p className="employer-jobs-stat-label">Monthly Applications</p>
+              <p className="employer-jobs-stat-value">{overview.monthlyApplications}</p>
+            </article>
+            <article className="employer-jobs-stat-card">
+              <p className="employer-jobs-stat-label">Scheduled Interviews</p>
+              <p className="employer-jobs-stat-value">{overview.scheduledInterviews}</p>
+            </article>
+            <article className="employer-jobs-stat-card">
+              <p className="employer-jobs-stat-label">Average Salary</p>
+              <p className="employer-jobs-stat-value">
+                {formatCurrency(overview.averageSalary)}
               </p>
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Job Title</th>
-                      <th>Location</th>
-                      <th>Type</th>
-                      <th>Posted</th>
-                      <th>Applicants</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredJobs.map((job) => (
-                      <tr key={job._id}>
-                        <td>{job.title}</td>
-                        <td>{job.location || "-"}</td>
-                        <td>{formatEmploymentType(job.employmentType)}</td>
-                        <td>
-                          {job.createdAt
-                            ? new Date(job.createdAt).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td>{(applicationsByJob[job._id] || []).length}</td>
-                        <td>
-                          <div className="dash-actions-row">
-                            <Link
-                              className="dash-link-inline"
-                              to={`/dashboard/job/${job._id}/applications`}
-                            >
-                              View Applications
-                            </Link>
-                            <button
-                              className="btn secondary-btn small-btn edit-btn"
-                              type="button"
-                              onClick={() => setEditingJob(job)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn danger small-btn"
-                              type="button"
-                              disabled={deletingJobId === job._id}
-                              onClick={() => handleDeleteJob(job)}
-                            >
-                              {deletingJobId === job._id ? "Deleting..." : "Delete"}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {filteredJobs.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="dash-muted">
-                          No opportunities match your search/filter.
-                        </td>
-                      </tr>
-                    ) : null}
-                  </tbody>
-                </table>
-              </div>
-              
-            </section>
+            </article>
           </div>
 
-          
-            
-          
+          <div className="employer-jobs-main-bottom">
+                <section className="employer-jobs-sub-panel employer-jobs-insight-panel">
+                  <p className="dash-muted employer-jobs-insight-kicker">Analytics Insight</p>
+                  <h3>Hiring performance snapshot</h3>
+                  <p className="dash-muted">
+                    Avg. applications per listing: <strong>{avgApplicationsPerJob}</strong>
+                  </p>
+                  <p className="dash-muted">
+                    Hired candidates: <strong>{overview.hiredCount}</strong>
+                  </p>
+                  <p className="dash-muted">
+                    Listings with applicants: <strong>{jobsWithApplicants}</strong> / {jobs.length}
+                  </p>
+                  <p className="dash-muted">
+                    Avg salary benchmark: <strong>{formatCurrency(overview.averageSalary)}</strong>
+                  </p>
+                </section>
+              </div>
+
+          <div className="employer-jobs-bottom-grid">
+            <section className="dash-panel employer-jobs-inner-panel">
+              <div className="dash-panel-head">
+                <h3>Posting Trend (Last 6 Months)</h3>
+              </div>
+              <div className="employer-jobs-trend">
+                {postingTrend.map((item) => {
+                  const height = (item.count / highestTrendValue) * 100;
+                  return (
+                    <div className="employer-jobs-trend-item" key={item.label}>
+                      <div className="employer-jobs-trend-track">
+                        <div
+                          className="employer-jobs-trend-bar"
+                          style={{ height: `${Math.max(height, 8)}%` }}
+                          title={`${item.count} jobs`}
+                        />
+                      </div>
+                      <span className="employer-jobs-trend-count">{item.count}</span>
+                      <span className="employer-jobs-trend-label">{item.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+            <section className="dash-panel employer-jobs-inner-panel">
+              <div className="dash-panel-head">
+                <h3>Recent Job Activity</h3>
+              </div>
+              <div className="employer-jobs-activity-list">
+                {jobs.slice(0, 4).map((job) => (
+                  <article className="employer-jobs-activity-item" key={job._id}>
+                    <div>
+                      <p className="employer-jobs-activity-title">{job.title}</p>
+                      <p className="dash-muted">
+                        {job.location || "Location not set"} •{" "}
+                        {formatEmploymentType(job.employmentType)} •{" "}
+                        {formatRelativePostedDate(job.createdAt)}
+                      </p>
+                    </div>
+                    <Link
+                      className="dash-link-inline"
+                      to={`/dashboard/job/${job._id}/applications`}
+                    >
+                      View Applications
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
         </div>
       )}
 
