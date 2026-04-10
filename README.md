@@ -198,6 +198,8 @@ See [`backend/src/docs/README.md`](backend/src/docs/README.md) for path-level no
 
 **Healthcheck failures (build OK, deploy OK, then “Healthcheck failure”):** The API must listen on **`0.0.0.0`** and **`MONGO_URI` must be set** in Railway **Variables**. For **MongoDB Atlas**, open **Network Access** and allow **`0.0.0.0/0`** (or Railway’s egress) so the container can connect; otherwise the app may not finish booting in time for checks.
 
+**Check database connectivity in production:** Open `GET /health` on your deployed API. The JSON includes **`database.connected`** (`true` when Mongoose is connected), **`database.state`**, and **`database.mongoUriConfigured`** (whether `MONGO_URI` is set — not the secret value). If `mongoUriConfigured` is false, add **`MONGO_URI`** in Railway Variables and redeploy. If it is true but `connected` stays false, fix **Atlas Network Access** (allow `0.0.0.0/0` for class demos) and confirm the connection string user/password/database name.
+
 #### Other hosts (Render, Fly.io, etc.)
 
 Use **Root Directory** `backend` (or equivalent), **start command** `npm start`, Node **18+**, and the same variables as below.

@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -45,8 +46,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
+const mongooseReadyStateLabels = {
+  0: "disconnected",
+  1: "connected",
+  2: "connecting",
+  3: "disconnecting",
+};
+
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok", message: "Job Board API healthy" });
+  const readyState = mongoose.connection.readyState;
+  const connected = readyState === 1;
+  res.status(200).json({
+    status: "ok",
+    message: "Job Board API healthy",
+    database: {
+      connected,
+      state: mongooseReadyStateLabels[readyState] ?? String(readyState),
+      mongoUriConfigured: Boolean(process.env.MONGO_URI),
+    },
+  });
 });
 
 // Root URL (Railway / browser default) — API has no HTML homepage
