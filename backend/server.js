@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5000;
 /**
  * Connect to MongoDB after HTTP is listening so Railway/docker healthchecks
  * on GET /health can succeed even if DB is slow or misconfigured at boot.
- * Fix Atlas: allow 0.0.0.0/0 or Railway egress IPs; set MONGO_URI on the host.
+ * Fix Atlas: allow 0.0.0.0/0 or Railway egress IPs; set MONGO_URI or DATABASE_URL on the host.
  */
 async function connectMongoWithDnsFallback() {
   try {
@@ -39,5 +39,10 @@ function startMongoInBackground() {
 // Bind all interfaces (required in containers) before DB so /health responds.
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend API listening on 0.0.0.0:${PORT}`);
+  if (!connectDB.getMongoUri()) {
+    console.warn(
+      "MongoDB URI not set: add MONGO_URI, DATABASE_URL, or MONGODB_URI in Railway Variables (e.g. Atlas connection string)."
+    );
+  }
   startMongoInBackground();
 });

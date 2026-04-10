@@ -15,6 +15,7 @@ const applicationRoutes = require("./modules/application/application.routes");
 const applicationNoteRoutes = require("./modules/applicationNote/applicationNote.routes");
 const interviewScheduleRoutes = require("./modules/interviewSchedule/interviewSchedule.routes");
 const swaggerSpec = require("./config/swagger");
+const connectDBModule = require("./config/db");
 const errorMiddleware = require("./middlewares/errorMiddleware");
 
 const app = express();
@@ -56,13 +57,15 @@ const mongooseReadyStateLabels = {
 app.get("/health", (req, res) => {
   const readyState = mongoose.connection.readyState;
   const connected = readyState === 1;
+  const mongoUri = connectDBModule.getMongoUri();
   res.status(200).json({
     status: "ok",
     message: "Job Board API healthy",
     database: {
       connected,
       state: mongooseReadyStateLabels[readyState] ?? String(readyState),
-      mongoUriConfigured: Boolean(process.env.MONGO_URI),
+      mongoUriConfigured: Boolean(mongoUri),
+      envSource: connectDBModule.mongoEnvSource(),
     },
   });
 });
