@@ -2639,13 +2639,56 @@ th {
 
 .employer-jobs-main-grid {
   display: grid;
-  grid-template-columns: 1.35fr 0.85fr;
+  grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+.employer-jobs-filter-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 0.65rem;
+  margin-bottom: 0.6rem;
+}
+
+.employer-jobs-filter-input,
+.employer-jobs-filter-select {
+  width: 100%;
+  border: 1px solid #c7d4ee;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1f2937;
+  padding: 0.58rem 0.7rem;
+  font-size: 0.92rem;
+}
+
+.employer-jobs-filter-input:focus,
+.employer-jobs-filter-select:focus {
+  outline: none;
+  border-color: #5f7fdb;
+  box-shadow: 0 0 0 3px rgba(95, 127, 219, 0.16);
+}
+
+.employer-jobs-filter-meta {
+  margin-bottom: 0.7rem;
 }
 
 .employer-jobs-side-col {
   display: grid;
   gap: 1rem;
+}
+
+.employer-jobs-main-bottom {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.employer-jobs-sub-panel {
+  border: 1px solid #bcc9e4;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(17, 24, 39, 0.08);
 }
 
 .employer-jobs-side-panel {
@@ -2779,6 +2822,13 @@ th {
   font-weight: 700;
   color: #101828;
   margin-bottom: 0.2rem;
+}
+
+.dash-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
 }
 
 .applications-layout {
@@ -3006,6 +3056,30 @@ th {
   font-size: 0.74rem;
   font-weight: 700;
   text-transform: capitalize;
+}
+
+.app-status-chip.pending {
+  background: #e6efff;
+  border-color: #9fb4e6;
+  color: #1f3f8f;
+}
+
+.app-status-chip.shortlisted {
+  background: #e5f7ee;
+  border-color: #92d8ae;
+  color: #166534;
+}
+
+.app-status-chip.rejected {
+  background: #ffeaea;
+  border-color: #efb0b0;
+  color: #9f1239;
+}
+
+.app-status-chip.hired {
+  background: #efe9ff;
+  border-color: #c9b6f0;
+  color: #5b21b6;
 }
 
 .schedule-btn {
@@ -3776,6 +3850,14 @@ th {
   }
 
   .employer-jobs-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .employer-jobs-filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .employer-jobs-main-bottom {
     grid-template-columns: 1fr;
   }
 
