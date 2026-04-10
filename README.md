@@ -192,13 +192,13 @@ See [`backend/src/docs/README.md`](backend/src/docs/README.md) for path-level no
 3. **If you see “Error creating build plan with Railpack”:** Railway is using **Railpack** instead of Docker. Fix it either way:
    - **A (best):** Push the latest repo (includes `railway.toml` + root `Dockerfile`), set **Root Directory** to **empty**, then **Redeploy**.
    - **B:** Open the service → **Settings** → **Build** → set **Builder** to **Dockerfile** (not Railpack / Auto) → **Dockerfile path** `Dockerfile` if root, or `backend/Dockerfile` if Root Directory is `backend` → save and redeploy.
-4. **Variables** tab: add `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL` (your Vercel URL), `NODE_ENV=production`. Railway injects `PORT` automatically.
+4. **Variables** tab: add `MONGO_URI` (or `DATABASE_URL` from a Mongo plugin), `JWT_SECRET`, `CLIENT_URL` (your Vercel URL), `ADMIN_INVITE_CODE` (for admin registration), and optionally `NODE_ENV=production`. Railway injects `PORT` automatically.
 5. **Settings** → **Networking** → **Generate Domain** (otherwise the service stays “unexposed” and has no public URL).
 6. Redeploy after saving variables.
 
 **Healthcheck failures (build OK, deploy OK, then “Healthcheck failure”):** The API must listen on **`0.0.0.0`** and **`MONGO_URI` must be set** in Railway **Variables**. For **MongoDB Atlas**, open **Network Access** and allow **`0.0.0.0/0`** (or Railway’s egress) so the container can connect; otherwise the app may not finish booting in time for checks.
 
-**Check database connectivity in production:** Open `GET /health` on your deployed API. The JSON includes **`database.connected`** (`true` when Mongoose is connected), **`database.state`**, and **`database.mongoUriConfigured`** (whether `MONGO_URI` is set — not the secret value). If `mongoUriConfigured` is false, add **`MONGO_URI`** in Railway Variables and redeploy. If it is true but `connected` stays false, fix **Atlas Network Access** (allow `0.0.0.0/0` for class demos) and confirm the connection string user/password/database name.
+**Check database connectivity in production:** Open `GET /health` on your deployed API. The JSON includes **`database.connected`** (`true` when Mongoose is connected), **`database.state`**, **`mongoUriConfigured`**, and **`envSource`** (`MONGO_URI`, `DATABASE_URL`, or `MONGODB_URI` — which key is set, not the secret). If `mongoUriConfigured` is false, add a URI variable in Railway Variables and redeploy. If it is true but `connected` stays false, fix **Atlas Network Access** (allow `0.0.0.0/0` for class demos) and confirm the connection string user/password/database name.
 
 #### Other hosts (Render, Fly.io, etc.)
 
@@ -213,6 +213,7 @@ Use **Root Directory** `backend` (or equivalent), **start command** `npm start`,
 | `MONGO_URI` | MongoDB connection string |
 | `JWT_SECRET` | Secret for signing JWTs |
 | `CLIENT_URL` | Deployed frontend URL (CORS) |
+| `ADMIN_INVITE_CODE` | Secret phrase for admin self-registration |
 | `SMTP_*` / `EMAIL_FROM` | Optional: email (see `backend/.env.example`) |
 
 Note the public **API base URL** (for example `https://your-api.up.railway.app`).
@@ -237,7 +238,7 @@ Note the public **API base URL** (for example `https://your-api.up.railway.app`)
 Attach images that show:
 
 1. **Production frontend** — browser on `https://career-link-wine.vercel.app` with address bar visible.
-2. **Production API health** — browser on `https://careerlink-production.up.railway.app/health` showing `"status":"ok"`.
+2. **Production API health** — browser on `https://careerlink-production.up.railway.app/health` showing `"status":"ok"` and ideally `"database":{"connected":true,...}`.
 3. *(Optional)* **Swagger** — `.../api/docs` open in the browser.
 4. *(Optional)* **Vercel** deployment **Ready** and **Railway** deployment **successful** (dashboard screenshots).
 
