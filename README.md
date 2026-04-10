@@ -262,18 +262,17 @@ Add screenshots with these **exact filenames** under `docs/evidence/` (see table
 
 | File | Capture |
 |------|---------|
-| `01-frontend-vercel.png` | Production frontend; **address bar** visible |
-| `02-api-health.png` | `/health` with `"status":"ok"` and database **connected** |
-| `03-swagger.png` | *(Optional)* `/api/docs` |
-| `04-dashboards.png` | *(Optional)* Vercel + Railway deploy success |
+| `01-frontend-vercel.png` | Vercel **Production** deployment (domains + preview) |
+| `02-api-health.png` | `/health` with `"status":"ok"` and **`database.connected": true`** |
+| `03-api-root.png` | API **root** (`/`) welcome JSON on Railway |
 
-![Production frontend (Vercel)](docs/evidence/01-frontend-vercel.png)
+*(Optional extras for your Word report: Swagger at `/api/docs`, Railway “successful deploy” dashboard.)*
 
-![API health check](docs/evidence/02-api-health.png)
+![Vercel production deployment](docs/evidence/01-frontend-vercel.png)
 
-![Swagger UI (optional)](docs/evidence/03-swagger.png)
+![API health with MongoDB connected](docs/evidence/02-api-health.png)
 
-![Deploy dashboards (optional)](docs/evidence/04-dashboards.png)
+![API root welcome JSON (Railway)](docs/evidence/03-api-root.png)
 
 ---
 

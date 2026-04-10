@@ -4,10 +4,9 @@ Add **PNG** (or JPG) files here so they show in the root **`README.md`** on GitH
 
 | Save as | What to capture |
 |---------|-----------------|
-| `01-frontend-vercel.png` | Live frontend with **address bar** showing your Vercel URL |
-| `02-api-health.png` | Browser on **`/health`** with `"status":"ok"` and `"connected":true` |
-| `03-swagger.png` | *(Optional)* **`/api/docs`** open |
-| `04-dashboards.png` | *(Optional)* Vercel **Ready** + Railway **success** |
+| `01-frontend-vercel.png` | Vercel dashboard: **Production** deployment, domains, site preview |
+| `02-api-health.png` | Browser on **`/health`** with `"status":"ok"` and **`database.connected": true`** |
+| `03-api-root.png` | Browser on API **root** (`/`) showing welcome JSON |
 
 After saving, commit from the repo root:
 

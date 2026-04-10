@@ -50,10 +50,10 @@ All source code, README (setup, API documentation, deployment report, testing re
 2. **Production API health** — browser on `/health`; JSON shows healthy status and database connected.  
    *[Insert picture here]*
 
-3. *(Optional)* **Swagger** — `/api/docs` in browser.  
-   *[Insert picture here]*
+3. **API root** — browser on `https://careerlink-production.up.railway.app` (welcome JSON).  
+   *[Insert picture here — same as repo `docs/evidence/03-api-root.png`]*
 
-4. *(Optional)* **Vercel / Railway** — deployment success.  
+4. *(Optional)* **Swagger** at `/api/docs` or **Railway** deploy success.  
    *[Insert picture here]*
 
 ## Testing evidence (optional paste)
