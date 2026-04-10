@@ -49,6 +49,16 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", message: "Job Board API healthy" });
 });
 
+// Root URL (Railway / browser default) — API has no HTML homepage
+app.get("/", (req, res) => {
+  res.status(200).json({
+    name: "CareerLink API",
+    health: "/health",
+    docs: "/api/docs",
+    jobs: "/api/jobs",
+  });
+});
+
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
