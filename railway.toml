@@ -1,0 +1,9 @@
+# Forces Docker build (avoids Railpack "build plan" failures on this monorepo).
+# See https://docs.railway.com/reference/config-as-code
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+startCommand = "node server.js"
