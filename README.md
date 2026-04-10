@@ -2,6 +2,8 @@
 
 Full-stack job board (Express + MongoDB + React). SE3040-style structure: REST API, role-based access, Swagger docs, React UI.
 
+**SE3040 documentation map:** **Setup** → below. **API endpoints** (methods, auth, request/response schemas, try-it-out) → **Swagger UI** at `/api/docs` and written notes in [`backend/src/docs/README.md`](backend/src/docs/README.md). **Deployment** → [Deployment report](#deployment-report). **Testing** → [Testing instruction report](#testing-instruction-report-se3040) and [Testing](#testing).
+
 ## Prerequisites
 
 - Node.js 18+
@@ -151,6 +153,8 @@ No Jest/Vitest suite is configured for React yet; the course requirement is met 
 
 ## API documentation
 
+**Assignment requirement (complete endpoint documentation):** Use **Swagger UI** for every route’s HTTP method, path, parameters, request/response models, status codes, and **Authorize** (JWT). Use [`backend/src/docs/README.md`](backend/src/docs/README.md) for narrative notes, sample payloads, and auth expectations. The summary table below is a quick index only.
+
 ### Interactive (Swagger)
 
 - **Local:** `http://localhost:5000/api/docs`
@@ -233,16 +237,43 @@ Note the public **API base URL** (for example `https://your-api.up.railway.app`)
 | **Swagger (production)** | [https://careerlink-production.up.railway.app/api/docs](https://careerlink-production.up.railway.app/api/docs) |
 | **Deployed frontend** | [https://career-link-wine.vercel.app](https://career-link-wine.vercel.app) |
 
-### Evidence (screenshots for report / LMS)
+### Evidence (screenshots)
 
-Attach images that show:
+See **[SE3040 — Submission package](#se3040--submission-package)** below: add PNGs to [`docs/evidence/`](docs/evidence/) and embed them in this README, and use the same images in your **LMS Word** document.
 
-1. **Production frontend** — browser on `https://career-link-wine.vercel.app` with address bar visible.
-2. **Production API health** — browser on `https://careerlink-production.up.railway.app/health` showing `"status":"ok"` and ideally `"database":{"connected":true,...}`.
-3. *(Optional)* **Swagger** — `.../api/docs` open in the browser.
-4. *(Optional)* **Vercel** deployment **Ready** and **Railway** deployment **successful** (dashboard screenshots).
+---
 
-If your lecturer requires a **single PDF**, paste these sections into the document and embed the screenshots under **Deployment report** and **Testing instruction report**.
+## SE3040 — Submission package
+
+Use this section for **AF / LMS** expectations: everything is either in this README or in [`docs/`](docs/).
+
+| Deliverable | Where |
+|-------------|--------|
+| Setup instructions | [Setup](#setup) |
+| API endpoint documentation | [API documentation](#api-documentation) + Swagger + `backend/src/docs/README.md` |
+| Deployment report | [Deployment report](#deployment-report) |
+| Testing instruction report | [Testing instruction report (SE3040)](#testing-instruction-report-se3040) + [Testing](#testing) |
+| LMS Word document (group + repo link + screenshots) | Template: [`docs/LMS-Submission-Template.md`](docs/LMS-Submission-Template.md) — copy into Word, fill placeholders, insert pictures, upload to LMS |
+| Evidence files on GitHub | [`docs/evidence/`](docs/evidence/) — see [`docs/evidence/README.md`](docs/evidence/README.md) |
+
+### Embedded deployment evidence (GitHub README)
+
+Add screenshots with these **exact filenames** under `docs/evidence/` (see table). Until you add them, GitHub may show a missing image for that row.
+
+| File | Capture |
+|------|---------|
+| `01-frontend-vercel.png` | Production frontend; **address bar** visible |
+| `02-api-health.png` | `/health` with `"status":"ok"` and database **connected** |
+| `03-swagger.png` | *(Optional)* `/api/docs` |
+| `04-dashboards.png` | *(Optional)* Vercel + Railway deploy success |
+
+![Production frontend (Vercel)](docs/evidence/01-frontend-vercel.png)
+
+![API health check](docs/evidence/02-api-health.png)
+
+![Swagger UI (optional)](docs/evidence/03-swagger.png)
+
+![Deploy dashboards (optional)](docs/evidence/04-dashboards.png)
 
 ---
 
@@ -260,8 +291,9 @@ If your lecturer requires a **single PDF**, paste these sections into the docume
 - [ ] Source code on GitHub: [CareerLink](https://github.com/SKSaranya-git/CareerLink.git)
 - [ ] README includes setup, API documentation, deployment report, testing instruction report, **live URLs** (above)
 - [ ] Environment variable **names** documented; **no secrets** committed
-- [ ] Screenshots: deployed frontend + `/health` (and optional Swagger / dashboards)
+- [ ] Screenshots added to [`docs/evidence/`](docs/evidence/) and committed (see [Embedded deployment evidence](#embedded-deployment-evidence-github-readme))
+- [ ] **LMS:** Word document from [`docs/LMS-Submission-Template.md`](docs/LMS-Submission-Template.md) — group ID, all names & student IDs, repo link, embedded screenshots — uploaded to submission link
 - [ ] Git history: meaningful commits and workflow (branches/PRs as required by module)
-- [ ] LMS PDF / report pack submitted if the module asks for files separate from GitHub
+- [ ] `git push origin main` after final changes
 
 Repository: [https://github.com/SKSaranya-git/CareerLink.git](https://github.com/SKSaranya-git/CareerLink.git)
