@@ -25,11 +25,16 @@ async function deleteById(noteId) {
   return ApplicationNote.findByIdAndDelete(noteId);
 }
 
+async function deleteManyByApplication(applicationId) {
+  return ApplicationNote.deleteMany({ application: applicationId });
+}
+
 module.exports = {
   create,
   findByApplication,
   findById,
   updateById,
   deleteById,
+  deleteManyByApplication,
 };
 

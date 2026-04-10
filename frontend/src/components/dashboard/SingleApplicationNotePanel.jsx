@@ -138,11 +138,11 @@ export default function SingleApplicationNotePanel({
   };
 
   return (
-    <div className="dash-panel note-panel" style={{ marginTop: 16 }}>
+    <div className="dash-panel note-panel note-panel-themed">
       <div className="dash-panel-head">
-        <div>
-          <h3 style={{ margin: 0 }}>{title}</h3>
-          <p className="dash-muted" style={{ marginTop: 4 }}>
+        <div className="note-panel-title-wrap">
+          <h3 className="note-panel-title">{title}</h3>
+          <p className="dash-muted note-panel-subtitle">
             Applicant review (internal only)
           </p>
         </div>
@@ -155,15 +155,23 @@ export default function SingleApplicationNotePanel({
       {loading ? <p className="dash-muted">Loading...</p> : null}
 
       {!editing && (
-        <div className="card note-item" style={{ boxShadow: "none" }}>
+        <div className="card note-item note-panel-card">
           {existing ? (
             <>
-              <p style={{ whiteSpace: "pre-wrap" }}>{existing.text}</p>
-              <p className="dash-muted" style={{ marginTop: 6 }}>
-                {existing.rating ? `Rating: ${existing.rating} / 5` : "Rating: -"}{" "}
-                {existing.tags?.length ? ` | Tags: ${existing.tags.join(", ")}` : ""}
+              <p className="note-panel-text">{existing.text}</p>
+              <p className="dash-muted note-panel-meta">
+                {existing.rating ? `Rating: ${existing.rating} / 5` : "Rating: -"}
               </p>
-              <div className="row" style={{ gap: 8 }}>
+              {existing.tags?.length ? (
+                <div className="note-tags-wrap">
+                  {existing.tags.map((tag) => (
+                    <span key={tag} className="note-tag-chip">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <div className="row note-panel-actions">
                 <button className="btn secondary-btn small-btn" type="button" onClick={startEdit}>
                   Update Note
                 </button>
@@ -174,9 +182,9 @@ export default function SingleApplicationNotePanel({
             </>
           ) : (
             <>
-              <p className="dash-muted">No note yet.</p>
-              <div className="row" style={{ gap: 8 }}>
-                <button className="btn small-btn" type="button" onClick={startAdd}>
+              <p className="dash-muted note-empty-copy">No note yet.</p>
+              <div className="row note-panel-actions">
+                <button className="btn small-btn note-add-btn" type="button" onClick={startAdd}>
                   Add Note
                 </button>
               </div>
@@ -186,23 +194,28 @@ export default function SingleApplicationNotePanel({
       )}
 
       {editing && (
-        <div className="form" style={{ marginTop: 0 }}>
+        <div className="form note-panel-form">
           <textarea
+            className="note-panel-textarea"
             rows={3}
             placeholder="Write an internal evaluation note..."
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
-          <div className="row" style={{ gap: 8, marginTop: 0 }}>
+          <div className="row note-panel-fields">
             <input
-              style={{ maxWidth: 140 }}
+              className="note-panel-rating"
               placeholder="Rating (1-5)"
               value={rating}
               onChange={(e) => setRating(e.target.value)}
             />
-            <input placeholder="Tags (comma separated)" value={tags} onChange={(e) => setTags(e.target.value)} />
+            <input
+              placeholder="Tags (comma separated)"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+            />
           </div>
-          <div className="row" style={{ gap: 8 }}>
+          <div className="row note-panel-actions">
             <button className="btn small-btn" type="button" onClick={save}>
               Save
             </button>

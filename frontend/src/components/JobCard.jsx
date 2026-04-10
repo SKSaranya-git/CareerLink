@@ -1,31 +1,64 @@
-export default function JobCard({ job, isActive, onClick }) {
-  return (
-    <div
-      className={`job-card-selectable ${isActive ? "active" : ""}`}
-      onClick={onClick}
-    >
-      <h3>{job.title}</h3>
-      <p style={{ fontWeight: 600, color: "#374151", marginBottom: '0.2rem' }}>
-        {job.employer?.companyName || job.employer?.name}
-      </p>
-      <p style={{ margin: 0 }}>{job.location}</p>
+export default function JobCard({ job, canApply, isApplied, onApply, isSaved, onToggleSave }) {
+  const postedDate = job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "-";
+  const company = job.employer?.companyName || job.employer?.name || "Employer";
+  const descriptionPreview = (job.description || "").trim();
 
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.8rem" }}>
+  return (
+    <article className="job-grid-card">
+      <div className="job-grid-card-head">
+        <h3>{job.title}</h3>
+        <span className="job-salary-pill">LKR {job.salary}</span>
+      </div>
+
+      <p className="job-grid-company">{company}</p>
+      <p className="job-grid-meta">
+        <span>{job.location}</span>
+        <span>Posted {postedDate}</span>
+      </p>
+
+      <p className="job-grid-desc">
+        {descriptionPreview.length > 180 ? `${descriptionPreview.slice(0, 180)}...` : descriptionPreview}
+      </p>
+
+      <div className="job-grid-tags">
         {Array.isArray(job.employmentType) ? (
-          job.employmentType.map(type => (
-            <span key={type} className="dash-tag" style={{ background: "#f3f4f6", color: "#374151" }}>
-              {type.replace("-", " ")}
+          job.employmentType.map((type) => (
+            <span key={type} className="job-type-pill">
+              {String(type).replace("-", " ")}
             </span>
           ))
-        ) : (
-          <span className="dash-tag" style={{ background: "#f3f4f6", color: "#374151" }}>
-            {job.employmentType}
-          </span>
-        )}
-        <span className="dash-tag" style={{ background: "#ecfdf5", color: "#065f46" }}>
-          LKR {job.salary}
-        </span>
+        ) : job.employmentType ? (
+          <span className="job-type-pill">{String(job.employmentType).replace("-", " ")}</span>
+        ) : null}
       </div>
-    </div>
+
+      <div className="job-grid-actions">
+        {canApply ? (
+          isApplied ? (
+            <button type="button" className="btn" disabled>
+              Applied
+            </button>
+          ) : (
+            <button type="button" className="btn" onClick={() => onApply(job._id)}>
+              Apply
+            </button>
+          )
+        ) : (
+          <button type="button" className="btn secondary-btn" disabled>
+            Job Seeker Only
+          </button>
+        )}
+
+        {canApply && typeof onToggleSave === "function" ? (
+          <button
+            type="button"
+            className={`btn ${isSaved ? "" : "secondary-btn"}`}
+            onClick={() => onToggleSave(job._id)}
+          >
+            {isSaved ? "Saved" : "Save"}
+          </button>
+        ) : null}
+      </div>
+    </article>
   );
 }

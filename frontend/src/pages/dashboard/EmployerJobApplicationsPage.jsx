@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import api from "../../api/axios";
 import SingleApplicationNotePanel from "../../components/dashboard/SingleApplicationNotePanel";
 
@@ -60,111 +60,163 @@ export default function EmployerJobApplicationsPage() {
     }
   };
 
+  const overview = useMemo(() => {
+    const withResume = applications.filter((app) => Boolean(app.resume)).length;
+    const withCoverLetter = applications.filter((app) => Boolean((app.coverLetter || "").trim())).length;
+    const notesAdded = applications.filter((app) => Boolean(noteSummaryByAppId[app._id])).length;
+    return {
+      totalPending: applications.length,
+      withResume,
+      withCoverLetter,
+      notesAdded,
+    };
+  }, [applications, noteSummaryByAppId]);
+
   return (
-    <div>
-      <div style={{ marginBottom: 12 }}>
-        <h1 className="dash-title" style={{ marginBottom: 6 }}>Applicants</h1>
-        <p className="dash-muted">Review and manage applications for this job.</p>
+    <div className="dash-panel">
+      <div className="dash-panel-head">
+        <h2>Applicants</h2>
       </div>
+      {message ? <p>{message}</p> : null}
+      {error ? <p className="error">{error}</p> : null}
 
-      <div className="dash-panel" style={{ marginTop: 0 }}>
-        {message ? <p>{message}</p> : null}
-        {error ? <p className="error">{error}</p> : null}
-
-        {applications.length === 0 ? (
-          <p className="dash-muted">No applications yet for this job.</p>
-        ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Applicant</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Status</th>
-                  <th>Resume</th>
-                  <th>Cover Letter</th>
-                  <th>Action</th>
-                  <th>Note</th>
-                </tr>
-              </thead>
-              <tbody>
-                {applications.map((app) => (
-                  <tr key={app._id}>
-                    <td>{app.fullName || app.applicant?.name || "-"}</td>
-                    <td>{app.email || app.applicant?.email || "-"}</td>
-                    <td>{app.phone || app.applicant?.contactNumber || "-"}</td>
-                    <td>{app.status}</td>
-                    <td>
-                      {app.resume ? (
-                        <a href={resumeHref(app.resume)} target="_blank" rel="noreferrer">
-                          View
-                        </a>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td style={{ maxWidth: 360, whiteSpace: "pre-wrap" }}>{app.coverLetter || "-"}</td>
-                    <td>
-                      <div className="row" style={{ gap: 8 }}>
-                        <button
-                          className="btn"
-                          disabled={updatingId === app._id}
-                          onClick={() => updateStatus(app._id, "shortlisted")}
-                          title="Approve to interview (shortlist)"
-                          type="button"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="btn danger"
-                          disabled={updatingId === app._id}
-                          onClick={() => updateStatus(app._id, "rejected")}
-                          title="Reject applicant"
-                          type="button"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ display: "grid", gap: 6 }}>
-                        <button
-                          className="btn secondary-btn small-btn"
-                          type="button"
-                          onClick={() => setNotePanelForId(app._id)}
-                        >
-                          {noteSummaryByAppId[app._id] ? "Edit Note" : "Add Note"}
-                        </button>
-                        {noteSummaryByAppId[app._id]?.preview ? (
-                          <span className="dash-muted note-preview" title={noteSummaryByAppId[app._id].preview}>
-                            {noteSummaryByAppId[app._id].preview}
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {applications.length === 0 ? (
+        <p className="dash-muted">No applications yet for this job.</p>
+      ) : (
+        <div className="applications-layout">
+          <div className="applications-stats">
+            <article className="applications-stat-card">
+              <p className="applications-stat-label">Pending Applications</p>
+              <p className="applications-stat-value">{overview.totalPending}</p>
+            </article>
+            <article className="applications-stat-card">
+              <p className="applications-stat-label">Resumes Attached</p>
+              <p className="applications-stat-value">{overview.withResume}</p>
+            </article>
+            <article className="applications-stat-card">
+              <p className="applications-stat-label">Cover Letters</p>
+              <p className="applications-stat-value">{overview.withCoverLetter}</p>
+            </article>
+            <article className="applications-stat-card">
+              <p className="applications-stat-label">Notes Added</p>
+              <p className="applications-stat-value">{overview.notesAdded}</p>
+            </article>
           </div>
-        )}
 
-        {notePanelForId && (
-          <SingleApplicationNotePanel
-            applicationId={notePanelForId}
-            onClose={() => setNotePanelForId(null)}
-            onNoteChange={(appId, summary) =>
-              setNoteSummaryByAppId((prev) => {
-                const next = { ...prev };
-                if (!summary) delete next[appId];
-                else next[appId] = summary;
-                return next;
-              })
-            }
-          />
-        )}
-      </div>
+          <section className="dash-panel applications-inner-panel">
+            <div className="dash-panel-head">
+              <h3>Application Queue</h3>
+            </div>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Applicant</th>
+                    <th>Profile</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Resume</th>
+                    <th>Cover Letter</th>
+                    <th>Action</th>
+                    <th>Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {applications.map((app) => {
+                    const seekerId = app.applicant?._id || app.applicant;
+                    return (
+                    <tr key={app._id}>
+                      <td>{app.fullName || app.applicant?.name || "-"}</td>
+                      <td>
+                        {seekerId ? (
+                          <Link
+                            className="dash-link-inline"
+                            to={`/dashboard/applicant/${seekerId}?applicationId=${app._id}&jobId=${jobId}`}
+                          >
+                            View profile
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td>{app.email || app.applicant?.email || "-"}</td>
+                      <td>{app.phone || app.applicant?.contactNumber || "-"}</td>
+                      <td>
+                        <span className="app-status-chip">{app.status}</span>
+                      </td>
+                      <td>
+                        {app.resume ? (
+                          <a href={resumeHref(app.resume)} target="_blank" rel="noreferrer">
+                            View
+                          </a>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td style={{ maxWidth: 360, whiteSpace: "pre-wrap" }}>{app.coverLetter || "-"}</td>
+                      <td>
+                        <div className="app-action-controls">
+                          <button
+                            className="btn"
+                            disabled={updatingId === app._id}
+                            onClick={() => updateStatus(app._id, "shortlisted")}
+                            title="Approve to interview (shortlist)"
+                            type="button"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            className="btn danger"
+                            disabled={updatingId === app._id}
+                            onClick={() => updateStatus(app._id, "rejected")}
+                            title="Reject applicant"
+                            type="button"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="app-note-controls">
+                          <button
+                            className="btn small-btn note-edit-btn"
+                            type="button"
+                            onClick={() => setNotePanelForId(app._id)}
+                          >
+                            {noteSummaryByAppId[app._id] ? "Edit Note" : "Add Note"}
+                          </button>
+                          {noteSummaryByAppId[app._id]?.preview ? (
+                            <span className="dash-muted note-preview" title={noteSummaryByAppId[app._id].preview}>
+                              {noteSummaryByAppId[app._id].preview}
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {notePanelForId && (
+        <SingleApplicationNotePanel
+          applicationId={notePanelForId}
+          onClose={() => setNotePanelForId(null)}
+          onNoteChange={(appId, summary) =>
+            setNoteSummaryByAppId((prev) => {
+              const next = { ...prev };
+              if (!summary) delete next[appId];
+              else next[appId] = summary;
+              return next;
+            })
+          }
+        />
+      )}
     </div>
   );
 }

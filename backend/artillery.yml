@@ -1,0 +1,18 @@
+# Load test public endpoints. Start API first: npm start (default http://localhost:5000)
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 20
+      arrivalRate: 5
+      name: Warm up
+    - duration: 30
+      arrivalRate: 15
+      name: Sustained load
+
+scenarios:
+  - name: Health and public jobs
+    flow:
+      - get:
+          url: "/health"
+      - get:
+          url: "/api/jobs"

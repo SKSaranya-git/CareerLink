@@ -2,6 +2,7 @@ const Job = require("../../models/Job");
 const ApiError = require("../../utils/ApiError");
 const { ROLES } = require("../../utils/constants");
 const applicationRepository = require("./application.repository");
+const applicationNoteRepository = require("../applicationNote/applicationNote.repository");
 const {
   sendApplicationReceivedEmail,
   sendApplicationStatusUpdatedEmail,
@@ -189,6 +190,57 @@ async function employerGetShortlistedApplications(employerUser) {
   return applicationRepository.findByJobIdsAndStatus(myJobIds, "shortlisted");
 }
 
+async function withdrawMyApplication({ applicantUser, applicationId }) {
+  if (!applicantUser || applicantUser.role !== ROLES.JOB_SEEKER) {
+    throw new ApiError(403, "Only job seekers can withdraw an application.");
+  }
+
+  const app = await applicationRepository.findById(applicationId);
+  if (!app) {
+    throw new ApiError(404, "Application not found.");
+  }
+
+  if (app.applicant.toString() !== applicantUser._id.toString()) {
+    throw new ApiError(403, "You can withdraw only your own applications.");
+  }
+
+  if (app.status !== "pending") {
+    throw new ApiError(
+      400,
+      "You can withdraw only while the application is pending (before the employer reviews it)."
+    );
+  }
+
+  await applicationNoteRepository.deleteManyByApplication(applicationId);
+  await applicationRepository.deleteById(applicationId);
+}
+
+async function getApplicationByIdForUser({ user, applicationId }) {
+  if (!user || ![ROLES.EMPLOYER, ROLES.JOB_SEEKER, ROLES.ADMIN].includes(user.role)) {
+    throw new ApiError(403, "Not allowed to view application.");
+  }
+
+  const app = await applicationRepository.findByIdPopulated(applicationId);
+  if (!app) {
+    throw new ApiError(404, "Application not found.");
+  }
+
+  if (user.role === ROLES.ADMIN) return app;
+
+  if (user.role === ROLES.JOB_SEEKER) {
+    if (app.applicant?._id?.toString() !== user._id.toString()) {
+      throw new ApiError(403, "Not allowed to view this application.");
+    }
+    return app;
+  }
+
+  // Employer: only job owner can view.
+  if (app.job?.employer?.toString() !== user._id.toString()) {
+    throw new ApiError(403, "Not allowed to view applications for this job.");
+  }
+  return app;
+}
+
 module.exports = {
   submitApplication,
   getMyApplications,
@@ -196,5 +248,7 @@ module.exports = {
   updateApplicationStatus,
   adminGetAllApplications,
   employerGetShortlistedApplications,
+  withdrawMyApplication,
+  getApplicationByIdForUser,
 };
 

@@ -40,6 +40,29 @@ export default function EmployerShortlistedPage() {
     load();
   }, []);
 
+  const overview = useMemo(() => {
+    const resumesAttached = applications.filter((app) => Boolean(app.resume)).length;
+    const notesAdded = applications.filter((app) => Boolean(noteSummaryByAppId[app._id])).length;
+
+    const now = new Date();
+    const thisMonth = applications.filter((app) => {
+      if (!app.appliedAt) return false;
+      const applied = new Date(app.appliedAt);
+      return (
+        !Number.isNaN(applied.getTime()) &&
+        applied.getMonth() === now.getMonth() &&
+        applied.getFullYear() === now.getFullYear()
+      );
+    }).length;
+
+    return {
+      totalShortlisted: applications.length,
+      resumesAttached,
+      notesAdded,
+      appliedThisMonth: thisMonth,
+    };
+  }, [applications, noteSummaryByAppId]);
+
   return (
     <div>
       <div style={{ marginBottom: 12 }}>
@@ -54,14 +77,37 @@ export default function EmployerShortlistedPage() {
       {applications.length === 0 ? (
         <p className="dash-muted">No shortlisted candidates yet.</p>
       ) : (
-        <>
-          <div className="dash-panel" style={{ marginTop: 0 }}>
+        <div className="shortlisted-layout">
+          <div className="shortlisted-stats">
+            <article className="shortlisted-stat-card">
+              <p className="shortlisted-stat-label">Total Shortlisted</p>
+              <p className="shortlisted-stat-value">{overview.totalShortlisted}</p>
+            </article>
+            <article className="shortlisted-stat-card">
+              <p className="shortlisted-stat-label">Resumes Attached</p>
+              <p className="shortlisted-stat-value">{overview.resumesAttached}</p>
+            </article>
+            <article className="shortlisted-stat-card">
+              <p className="shortlisted-stat-label">Applied This Month</p>
+              <p className="shortlisted-stat-value">{overview.appliedThisMonth}</p>
+            </article>
+            <article className="shortlisted-stat-card">
+              <p className="shortlisted-stat-label">Notes Added</p>
+              <p className="shortlisted-stat-value">{overview.notesAdded}</p>
+            </article>
+          </div>
+
+          <section className="dash-panel shortlisted-inner-panel">
+            <div className="dash-panel-head">
+              <h3>Interview Candidate Queue</h3>
+            </div>
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
                     <th>Job</th>
                     <th>Applicant</th>
+                    <th>Profile</th>
                     <th>Email</th>
                     <th>Phone</th>
                     <th>Resume</th>
@@ -71,7 +117,10 @@ export default function EmployerShortlistedPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {applications.map((app) => (
+                  {applications.map((app) => {
+                    const seekerId = app.applicant?._id || app.applicant;
+                    const jobPk = app.job?._id || app.job;
+                    return (
                     <tr
                       key={app._id}
                       className={selectedId === app._id ? "table-row-selected" : ""}
@@ -81,6 +130,18 @@ export default function EmployerShortlistedPage() {
                     >
                       <td>{app.job?.title || "-"}</td>
                       <td>{app.fullName || app.applicant?.name || "-"}</td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        {seekerId ? (
+                          <Link
+                            className="dash-link-inline"
+                            to={`/dashboard/applicant/${seekerId}?applicationId=${app._id}${jobPk ? `&jobId=${jobPk}` : ""}`}
+                          >
+                            View profile
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                       <td>{app.email || app.applicant?.email || "-"}</td>
                       <td>{app.phone || app.applicant?.contactNumber || "-"}</td>
                       <td>
@@ -99,18 +160,20 @@ export default function EmployerShortlistedPage() {
                       </td>
                       <td>{app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : "-"}</td>
                       <td>
-                        <Link
-                          className="btn schedule-btn"
-                          to={`/dashboard/schedule-interview/${app._id}`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Schedule Interview
-                        </Link>
+                        <div className="app-action-controls">
+                          <Link
+                            className="btn schedule-btn"
+                            to={`/dashboard/schedule-interview/${app._id}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Schedule Interview
+                          </Link>
+                        </div>
                       </td>
                       <td>
-                        <div style={{ display: "grid", gap: 6 }}>
+                        <div className="app-note-controls">
                           <button
-                            className="btn secondary-btn small-btn"
+                            className="btn small-btn note-edit-btn"
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -128,11 +191,12 @@ export default function EmployerShortlistedPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>
-          </div>
+          </section>
 
           {notePanelForId && (
             <SingleApplicationNotePanel
@@ -148,7 +212,7 @@ export default function EmployerShortlistedPage() {
               }
             />
           )}
-        </>
+        </div>
       )}
     </div>
   );

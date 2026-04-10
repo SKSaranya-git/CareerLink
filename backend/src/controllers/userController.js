@@ -39,6 +39,28 @@ async function deleteUser(req, res, next) {
   }
 }
 
+async function getPublicEmployerProfile(req, res, next) {
+  try {
+    const user = await userService.getPublicEmployerProfile(req.params.userId);
+    res.status(200).json({ user });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getPublicSeekerProfileForEmployer(req, res, next) {
+  try {
+    const result = await userService.getPublicSeekerProfileForEmployer(
+      req.params.userId,
+      req.user.id,
+      req.query.applicationId || null
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function uploadProfileImage(req, res, next) {
   try {
     if (!req.file) {
@@ -56,40 +78,12 @@ async function uploadProfileImage(req, res, next) {
   }
 }
 
-async function saveJob(req, res, next) {
-  try {
-    const result = await userService.saveJob(req.user.id, req.params.jobId);
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function unsaveJob(req, res, next) {
-  try {
-    const result = await userService.unsaveJob(req.user.id, req.params.jobId);
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function getSavedJobs(req, res, next) {
-  try {
-    const savedJobs = await userService.getSavedJobs(req.user.id);
-    res.status(200).json({ count: savedJobs.length, savedJobs });
-  } catch (error) {
-    next(error);
-  }
-}
-
 module.exports = {
   getProfile,
+  getPublicEmployerProfile,
+  getPublicSeekerProfileForEmployer,
   updateProfile,
   getAllUsers,
   deleteUser,
   uploadProfileImage,
-  saveJob,
-  unsaveJob,
-  getSavedJobs,
 };

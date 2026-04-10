@@ -25,7 +25,7 @@ describe("API smoke tests", () => {
       description: "Build responsive UI for job board platform.",
       location: "Colombo",
       salary: 120000,
-      employmentType: "full-time",
+      employmentType: ["full-time"],
     });
 
     expect(response.statusCode).toBe(401);

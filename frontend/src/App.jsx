@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import { useAuth } from "./context/AuthContext";
 import Footer from "./components/Footer";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -14,13 +15,23 @@ import RoleRoute from "./routes/RoleRoute";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardOverviewPage from "./pages/dashboard/DashboardOverviewPage";
 import ProfilePage from "./pages/dashboard/ProfilePage";
+import ProfilePublicPage from "./pages/dashboard/ProfilePublicPage";
 import ApprovalsPage from "./pages/dashboard/ApprovalsPage";
 import MyApplicationsPage from "./pages/dashboard/MyApplicationsPage";
 import EmployerMyJobsPage from "./pages/dashboard/EmployerMyJobsPage";
 import EmployerJobApplicationsPage from "./pages/dashboard/EmployerJobApplicationsPage";
 import EmployerShortlistedPage from "./pages/dashboard/EmployerShortlistedPage";
+import ApplicantSeekerProfilePage from "./pages/dashboard/ApplicantSeekerProfilePage";
 import ScheduleInterviewPage from "./pages/dashboard/ScheduleInterviewPage";
-import SavedJobsPage from "./pages/dashboard/SavedJobsPage";
+import AdminAnalyticsNotificationsPage from "./pages/dashboard/AdminAnalyticsNotificationsPage";
+
+function PublicJobsRoute() {
+  const { user } = useAuth();
+  if (user?.role === "job_seeker") {
+    return <Navigate to="/dashboard/jobs" replace />;
+  }
+  return <JobsPage />;
+}
 
 function App() {
   return (
@@ -32,7 +43,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/register/:role" element={<RegisterPage />} />
-          <Route path="/jobs" element={<JobsPage />} />
+          <Route path="/jobs" element={<PublicJobsRoute />} />
+          <Route path="/employer/:employerId" element={<ProfilePublicPage />} />
           <Route
             path="/dashboard"
             element={
@@ -42,7 +54,8 @@ function App() {
             }
           >
             <Route index element={<DashboardOverviewPage />} />
-            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile" element={<ProfilePublicPage />} />
+            <Route path="settings" element={<ProfilePage />} />
             <Route
               path="my-applications"
               element={
@@ -52,13 +65,14 @@ function App() {
               }
             />
             <Route
-              path="saved-jobs"
+              path="jobs"
               element={
                 <RoleRoute allowedRoles={["job_seeker"]}>
-                  <SavedJobsPage />
+                  <JobsPage />
                 </RoleRoute>
               }
             />
+            <Route path="employer/:employerId" element={<ProfilePublicPage />} />
             <Route
               path="my-jobs"
               element={
@@ -68,10 +82,26 @@ function App() {
               }
             />
             <Route
+              path="post-job"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <PostJobPage />
+                </RoleRoute>
+              }
+            />
+            <Route
               path="job/:jobId/applications"
               element={
                 <RoleRoute allowedRoles={["employer"]}>
                   <EmployerJobApplicationsPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="applicant/:seekerId"
+              element={
+                <RoleRoute allowedRoles={["employer"]}>
+                  <ApplicantSeekerProfilePage />
                 </RoleRoute>
               }
             />
@@ -92,6 +122,14 @@ function App() {
               }
             />
             <Route
+              path="analytics-notifications"
+              element={
+                <RoleRoute allowedRoles={["admin"]}>
+                  <AdminAnalyticsNotificationsPage />
+                </RoleRoute>
+              }
+            />
+            <Route
               path="approvals"
               element={
                 <RoleRoute allowedRoles={["admin"]}>
@@ -99,15 +137,15 @@ function App() {
                 </RoleRoute>
               }
             />
-            <Route
-              path="post-job"
-              element={
-                <RoleRoute allowedRoles={["employer"]}>
-                  <PostJobPage />
-                </RoleRoute>
-              }
-            />
           </Route>
+          <Route
+            path="/post-job"
+            element={
+              <RoleRoute allowedRoles={["employer"]}>
+                <Navigate to="/dashboard/post-job" replace />
+              </RoleRoute>
+            }
+          />
           <Route
             path="/admin"
             element={

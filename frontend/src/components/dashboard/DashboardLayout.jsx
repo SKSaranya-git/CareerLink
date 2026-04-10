@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -16,6 +16,7 @@ function SidebarLink({ to, label }) {
 
 export default function DashboardLayout() {
   const { user } = useAuth();
+  const location = useLocation();
   const [badgeImgError, setBadgeImgError] = useState(false);
 
   const serverBase = useMemo(() => {
@@ -38,6 +39,47 @@ export default function DashboardLayout() {
     setBadgeImgError(false);
   }, [user?.profileImage]);
 
+  const crumbs = useMemo(() => {
+    const roleLabelMap = {
+      admin: "Admin",
+      employer: "Employer",
+      job_seeker: "Job Seeker",
+    };
+    const roleLabel = roleLabelMap[user?.role] || "User";
+    const path = location.pathname;
+
+    if (path === "/dashboard") return ["CareerLink", roleLabel, "Dashboard"];
+    if (path === "/dashboard/profile") return ["CareerLink", roleLabel, "Public Profile"];
+    if (path === "/dashboard/settings") return ["CareerLink", roleLabel, "Settings"];
+    if (path === "/dashboard/my-jobs") return ["CareerLink", "Employer", "My Jobs"];
+    if (path === "/dashboard/post-job") return ["CareerLink", "Employer", "Post a Job"];
+    if (path === "/dashboard/shortlisted") return ["CareerLink", "Employer", "Shortlisted"];
+    if (path.startsWith("/dashboard/job/") && path.endsWith("/applications")) {
+      return ["CareerLink", "Employer", "Job Applications"];
+    }
+    if (path.startsWith("/dashboard/applicant/")) {
+      return ["CareerLink", "Employer", "Applicant Profile"];
+    }
+    if (path.startsWith("/dashboard/schedule-interview/")) {
+      return ["CareerLink", "Employer", "Schedule Interview"];
+    }
+    if (path === "/dashboard/my-applications") {
+      return ["CareerLink", "Job Seeker", "My Applications"];
+    }
+    if (path === "/dashboard/jobs") {
+      return ["CareerLink", "Job Seeker", "Jobs"];
+    }
+    if (path.startsWith("/dashboard/employer/")) {
+      return ["CareerLink", "Job Seeker", "Company Profile"];
+    }
+    if (path === "/dashboard/analytics-notifications") {
+      return ["CareerLink", "Admin", "Analytics & Notifications"];
+    }
+    if (path === "/dashboard/approvals") return ["CareerLink", "Admin", "Approvals"];
+
+    return ["CareerLink", roleLabel, "Dashboard"];
+  }, [location.pathname, user?.role]);
+
   return (
     <div className="dash-shell">
       <aside className="dash-sidebar">
@@ -54,7 +96,7 @@ export default function DashboardLayout() {
             )}
           </div>
           <div>
-            <p className="dash-app">CareerLink</p>
+            <p className="dash-user-name">{user?.name || "User"}</p>
             <p className="dash-sub">{user?.role?.replace("_", " ")}</p>
           </div>
         </div>
@@ -62,10 +104,12 @@ export default function DashboardLayout() {
         <div className="dash-nav">
           <p className="dash-nav-title">Overview</p>
           <SidebarLink to="/dashboard" label="Dashboard" />
-          <SidebarLink to="/dashboard/profile" label="Profile" />
+          <SidebarLink to="/dashboard/settings" label="Settings" />
 
           {user?.role === "admin" && (
             <>
+              <p className="dash-nav-title">Admin</p>
+              <SidebarLink to="/dashboard/analytics-notifications" label="Analytics & Notifications" />
               <p className="dash-nav-title">Moderation</p>
               <SidebarLink to="/dashboard/approvals" label="Approvals" />
             </>
@@ -83,8 +127,8 @@ export default function DashboardLayout() {
           {user?.role === "job_seeker" && (
             <>
               <p className="dash-nav-title">Job Seeker</p>
+              <SidebarLink to="/dashboard/jobs" label="Jobs" />
               <SidebarLink to="/dashboard/my-applications" label="My Applications" />
-              <SidebarLink to="/dashboard/saved-jobs" label="Saved Jobs" />
             </>
           )}
         </div>
@@ -92,10 +136,7 @@ export default function DashboardLayout() {
 
       <section className="dash-main">
         <header className="dash-topbar">
-          <div className="dash-crumbs">CareerLink / Dashboard</div>
-          <div className="dash-topbar-right">
-            <div className="dash-pill">{user?.name?.split(" ")?.[0] || "User"}</div>
-          </div>
+          <div className="dash-crumbs">{crumbs.join(" / ")}</div>
         </header>
         <div className="dash-content">
           <Outlet />

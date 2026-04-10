@@ -1,6 +1,5 @@
 const jobService = require("../services/jobService");
 
-// POST /api/jobs — Create a new job posting (employer only)
 async function createJob(req, res, next) {
   try {
     const job = await jobService.createJob(req.body, req.user.id);
@@ -10,14 +9,14 @@ async function createJob(req, res, next) {
   }
 }
 
-// GET /api/jobs — Retrieve all jobs with pagination and search
 async function getAllJobs(req, res, next) {
   try {
     const result = await jobService.getAllJobs(req.query);
     res.status(200).json({
       count: result.jobs.length,
-      totalCount: result.totalCount,
+      total: result.total,
       page: result.page,
+      limit: result.limit,
       totalPages: result.totalPages,
       jobs: result.jobs,
     });
@@ -26,7 +25,6 @@ async function getAllJobs(req, res, next) {
   }
 }
 
-// GET /api/jobs/:id — Retrieve a single job by its ID
 async function getJobById(req, res, next) {
   try {
     const job = await jobService.getJobById(req.params.id);
@@ -36,7 +34,6 @@ async function getJobById(req, res, next) {
   }
 }
 
-// PUT /api/jobs/:id — Update an existing job (owner only)
 async function updateJob(req, res, next) {
   try {
     const job = await jobService.updateJob(req.params.id, req.user.id, req.body);
@@ -46,7 +43,6 @@ async function updateJob(req, res, next) {
   }
 }
 
-// DELETE /api/jobs/:id — Remove a job posting (owner only)
 async function deleteJob(req, res, next) {
   try {
     await jobService.deleteJob(req.params.id, req.user.id);
@@ -56,7 +52,6 @@ async function deleteJob(req, res, next) {
   }
 }
 
-// GET /api/jobs/my-jobs — Get all jobs posted by the current employer
 async function getMyJobs(req, res, next) {
   try {
     const jobs = await jobService.getMyJobs(req.user.id);

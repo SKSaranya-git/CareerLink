@@ -2,7 +2,7 @@ Swagger documentation is exposed at:
 
 `http://localhost:5000/api/docs`
 
-Route annotations are defined in `src/routes/*.js`.
+Route annotations are defined in `src/routes/*.js` and `src/modules/**/*.routes.js` (applications, application notes, interviews, etc.).
 
 ---
 
@@ -55,3 +55,29 @@ Sample response:
 ### Admin
 
 `GET /api/applications` (view all applications)
+
+`DELETE /api/applications/:applicationId` (job seeker only; **pending** applications only — withdraw and remove related employer notes)
+
+---
+
+## Application notes (employer)
+
+Base path: `/api` (nested under applications)
+
+`POST /api/applications/:applicationId/notes`
+
+- Body: `{ "text": "…", "rating": 1-5 optional, "tags": [] optional }`
+
+`GET /api/applications/:applicationId/notes`
+
+`PATCH /api/application-notes/:noteId`
+
+`DELETE /api/application-notes/:noteId`
+
+---
+
+## Public jobs list (query parameters)
+
+`GET /api/jobs`
+
+Optional query: `page`, `limit` (max 100), `search` (full-text), `minSalary`, `employmentType` (or `jobType`), `datePosted` (`24h` | `7d` | `30d`).

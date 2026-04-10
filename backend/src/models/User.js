@@ -108,10 +108,6 @@ const userSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
-    savedJobs: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
-      default: [],
-    },
   },
   { timestamps: true }
 );

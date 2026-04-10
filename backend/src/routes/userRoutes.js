@@ -1,5 +1,5 @@
 const express = require("express");
-const { body, param } = require("express-validator");
+const { body, param, query } = require("express-validator");
 const userController = require("../controllers/userController");
 const { protect } = require("../middlewares/authMiddleware");
 const { authorize } = require("../middlewares/roleMiddleware");
@@ -20,6 +20,25 @@ const router = express.Router();
  *       200: { description: OK }
  */
 router.get("/profile", protect, userController.getProfile);
+
+/** Public employer profile (for job listings / seekers) — no auth */
+router.get(
+  "/public/employer/:userId",
+  [param("userId").isMongoId(), validateRequest],
+  userController.getPublicEmployerProfile
+);
+
+router.get(
+  "/public/seeker/:userId",
+  [
+    protect,
+    authorize(ROLES.EMPLOYER),
+    param("userId").isMongoId(),
+    query("applicationId").optional().isMongoId(),
+    validateRequest,
+  ],
+  userController.getPublicSeekerProfileForEmployer
+);
 
 /**
  * @swagger
@@ -87,25 +106,6 @@ router.delete(
   "/:id",
   [protect, authorize(ROLES.ADMIN), param("id").isMongoId(), validateRequest],
   userController.deleteUser
-);
-
-// Saved Jobs (job_seeker only)
-router.get(
-  "/saved-jobs",
-  [protect, authorize(ROLES.JOB_SEEKER)],
-  userController.getSavedJobs
-);
-
-router.post(
-  "/saved-jobs/:jobId",
-  [protect, authorize(ROLES.JOB_SEEKER), param("jobId").isMongoId(), validateRequest],
-  userController.saveJob
-);
-
-router.delete(
-  "/saved-jobs/:jobId",
-  [protect, authorize(ROLES.JOB_SEEKER), param("jobId").isMongoId(), validateRequest],
-  userController.unsaveJob
 );
 
 module.exports = router;

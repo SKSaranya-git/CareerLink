@@ -1,0 +1,2 @@
+/* Utilities only — safe alongside legacy styles.css (no global reset). */
+@tailwind utilities;

@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// Job posting schema — stores all details for a single job listing.
 const jobSchema = new mongoose.Schema(
   {
     title: {
@@ -15,12 +14,12 @@ const jobSchema = new mongoose.Schema(
     },
     responsibilities: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
     requirements: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
     },
     location: {
@@ -37,24 +36,24 @@ const jobSchema = new mongoose.Schema(
       type: [String],
       enum: ["full-time", "part-time", "internship", "contract"],
       required: true,
-      validate: [v => Array.isArray(v) && v.length > 0, "Must specify at least one employment type"],
+      validate: [(v) => Array.isArray(v) && v.length > 0, "Must specify at least one employment type"],
     },
-    // Reference to the employer (User) who posted this job
     employer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
   },
-  { timestamps: true } // Adds createdAt and updatedAt automatically
+  { timestamps: true }
 );
 
 // Legacy documents may store a single string; coerce before validation.
-jobSchema.pre("validate", function coerceEmploymentType() {
+jobSchema.pre("validate", function coerceEmploymentType(next) {
   const v = this.employmentType;
   if (typeof v === "string" && v.trim()) {
     this.employmentType = [v.trim()];
   }
+  next();
 });
 
 jobSchema.index({
